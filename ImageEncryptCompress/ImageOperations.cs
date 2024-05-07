@@ -33,6 +33,21 @@ namespace ImageEncryptCompress
         /// </summary>
         /// <param name="ImagePath">Image file path</param>
         /// <returns>2D array of colors</returns>
+        /// 
+        static string Generatekey(string init_sead, int tap_position, int k)
+        {
+            string Initial_seed = string.Copy(init_sead);
+            while (k > 0)
+            {
+                k--;
+
+                char leftBit = Initial_seed[0];
+                char tapBit = Initial_seed[Initial_seed.Length - 1 - tap_position];
+                Initial_seed = Initial_seed.Insert(Initial_seed.Length, (leftBit ^ tapBit).ToString());
+                Initial_seed = Initial_seed.Remove(0, 1);
+            }
+            return Initial_seed;
+        }
         public static RGBPixel[,] OpenImage(string ImagePath)
         {
             Bitmap original_bm = new Bitmap(ImagePath);
