@@ -210,15 +210,31 @@ namespace ImageEncryptCompress
         public static void CompressImage(RGBPixel[,] image, string outputFilePath)
         {
             Dictionary<int, int> frequencies = new Dictionary<int, int>();
-            foreach (var pixel in image)
+            for (int i = 0; i < 3; i++)
             {
-                int pixelValue = pixel.red << 16 | pixel.green << 8 | pixel.blue;
-                if (frequencies.ContainsKey(pixelValue))
-                    frequencies[pixelValue]++;
-                else
-                    frequencies[pixelValue] = 1;
-            }
 
+
+                foreach (var pixel in image)
+                {
+
+                    int pixelValue;
+                    if (i == 0)
+                    {
+                      pixelValue=  pixel.red;
+                    }
+                    else if(i==1){
+                        pixelValue = pixel.green;
+                    }
+                    else
+                    {
+                        pixelValue = pixel.blue;
+                    }
+                    if (frequencies.ContainsKey(pixelValue))
+                        frequencies[pixelValue]++;
+                    else
+                        frequencies[pixelValue] = 1;
+                }
+            }
 
             HuffmanNode root =BuildHuffmanTree(frequencies);
 
@@ -227,13 +243,28 @@ namespace ImageEncryptCompress
 
             
             List<bool> encodedBits = new List<bool>();
-            foreach (var pixel in image)
+            for (int i = 0; i < 3; i++)
             {
-                int pixelValue = pixel.red << 16 | pixel.green << 8 | pixel.blue;
-                string code = huffmanCodes[pixelValue];
-                foreach (char bit in code)
+                foreach (var pixel in image)
                 {
-                    encodedBits.Add(bit == '1');
+                    int pixelValue;
+                    if (i == 0)
+                    {
+                        pixelValue = pixel.red;
+                    }
+                    else if (i == 1)
+                    {
+                        pixelValue = pixel.green;
+                    }
+                    else
+                    {
+                        pixelValue = pixel.blue;
+                    }
+                    string code = huffmanCodes[pixelValue];
+                    foreach (char bit in code)
+                    {
+                        encodedBits.Add(bit == '1');
+                    }
                 }
             }
 
