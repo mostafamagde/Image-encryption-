@@ -19,3 +19,13 @@ D:\New folder\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompr
 D:\New folder\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.exe.config
 D:\New folder\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.exe
 D:\New folder\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.pdb
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.csproj.AssemblyReference.cache
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.MainForm.resources
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.Properties.Resources.resources
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.csproj.GenerateResource.cache
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.csproj.CoreCompileInputs.cache
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.exe
+D:\Image enc\Image-encryption-\ImageEncryptCompress\obj\Debug\ImageEncryptCompress.pdb
+D:\Image enc\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.exe.config
+D:\Image enc\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.exe
+D:\Image enc\Image-encryption-\ImageEncryptCompress\bin\Debug\ImageEncryptCompress.pdb

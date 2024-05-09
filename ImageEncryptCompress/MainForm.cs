@@ -8,8 +8,10 @@ using System.Windows.Forms;
 
 namespace ImageEncryptCompress
 {
+  
     public partial class MainForm : Form
     {
+        
         public MainForm()
         {
             InitializeComponent();
@@ -39,7 +41,40 @@ namespace ImageEncryptCompress
             ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
         }
 
-       
-       
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ImageMatrix = ImageOperations.Encrypt(ImageMatrix , Seed_Box.Text,(int) K_value.Value);
+            ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtGaussSigma_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
