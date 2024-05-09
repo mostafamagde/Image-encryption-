@@ -25,11 +25,11 @@ namespace ImageEncryptCompress
     [Serializable]
     public class HuffmanNode
     {
-        public byte Value { get; set; }
-        public int Frequency { get; set; }
-        public HuffmanNode Left { get; set; }
-        public HuffmanNode Right { get; set; }
-        public string Identifier { get; set; } 
+        public byte Value;
+        public int Frequency;
+        public HuffmanNode Left;
+        public HuffmanNode Right;
+        public string Identifier;
     }
 
     public struct RGBPixelD
