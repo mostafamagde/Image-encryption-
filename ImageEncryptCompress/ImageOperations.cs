@@ -25,7 +25,7 @@ namespace ImageEncryptCompress
     [Serializable]
     public class HuffmanNode
     {
-        public int Value { get; set; }
+        public byte Value { get; set; }
         public int Frequency { get; set; }
         public HuffmanNode Left { get; set; }
         public HuffmanNode Right { get; set; }
@@ -72,10 +72,10 @@ namespace ImageEncryptCompress
              
             }
             RGBPixel[,] image = new RGBPixel[height, width];
-            Dictionary<string,int> huffmanCodes=   ReBuildHuffmanCodes(root);
+            Dictionary<string,byte> huffmanCodes=   ReBuildHuffmanCodes(root);
             string result = "";
             int w=0, h=0;
-
+            int count = 0;
             foreach (byte b in encodedBytes)
             {
                 for (int i = 7; i >= 0; i--)
@@ -85,17 +85,30 @@ namespace ImageEncryptCompress
 
                     char s = bit ? '1' : '0';
                     result = $"{result}{s}";
-                    if (huffmanCodes.ContainsKey(result))
-                    {                                           
-                        int pixelValue = huffmanCodes[result] ;
-                        image[h, w].red = (byte)((pixelValue >> 16) & 0xFF);
-                        image[h, w].green = (byte)((pixelValue >> 8) & 0xFF);
-                        image[h, w].blue = (byte) ( pixelValue & 0xFF);
-                        w++;
-                        if (w == width)
+                    byte value;
+                    if (huffmanCodes.TryGetValue(result,out value))
+                    {               
+                        if (count % 3 == 0)
                         {
-                            w = 0;
-                            h++;
+                            image[h, w].red = value;
+                        }
+                        else if(count % 3 ==1)
+                        {
+                            image[h, w].green= value;
+                        }
+                        else
+                        {
+                            image[h, w].blue= value; 
+                        }
+                        count++;
+                        if (count % 3==0)
+                        {
+                            w++;
+                            if (w == width)
+                            {
+                                w = 0;
+                                h++;
+                            }
                         }
                         result = "";
                     }
@@ -104,14 +117,14 @@ namespace ImageEncryptCompress
             }
             return image;
         }
-        public static Dictionary<string, int> ReBuildHuffmanCodes(HuffmanNode root)
+        public static Dictionary<string, byte> ReBuildHuffmanCodes(HuffmanNode root)
         {
-            Dictionary<string, int> codes = new Dictionary<string, int>();
+            Dictionary<string, byte> codes = new Dictionary<string, byte>();
             ReBuildHuffmanCodesRecursive(root, "", codes);
             return codes;
         }
 
-        private static void ReBuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<string,int> codes)
+        private static void ReBuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<string,byte> codes)
         {
             if (node == null)
                 return;
@@ -125,7 +138,7 @@ namespace ImageEncryptCompress
             ReBuildHuffmanCodesRecursive(node.Left, code + "0", codes);
             ReBuildHuffmanCodesRecursive(node.Right, code + "1", codes);
         }
-        public static HuffmanNode BuildHuffmanTree(Dictionary<int, int> frequencies)
+        public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
         {
              int identifierCounter = 0;
             var priorityQueue = new SortedDictionary<(int Frequency, string Identifier), HuffmanNode>();
@@ -157,14 +170,14 @@ namespace ImageEncryptCompress
 
             return priorityQueue.First().Value;
         }
-        public static Dictionary<int, string> BuildHuffmanCodes(HuffmanNode root)
+        public static Dictionary<byte, string> BuildHuffmanCodes(HuffmanNode root)
         {
-            var codes = new Dictionary<int, string>();
+            var codes = new Dictionary<byte, string>();
             BuildHuffmanCodesRecursive(root, "", codes);
             return codes;
         }
 
-        private static void BuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<int, string> codes)
+        private static void BuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<byte, string> codes)
         {
             if (node == null)
                 return;
@@ -180,31 +193,74 @@ namespace ImageEncryptCompress
         }
         public static void CompressImage(RGBPixel[,] image, string outputFilePath)
         {
-            Dictionary<int, int> frequencies = new Dictionary<int, int>();
+            Dictionary<byte, int> frequencies = new Dictionary<byte, int>();
             foreach (var pixel in image)
             {
-                int pixelValue = pixel.red << 16 | pixel.green << 8 | pixel.blue;
-                if (frequencies.ContainsKey(pixelValue))
-                    frequencies[pixelValue]++;
-                else
-                    frequencies[pixelValue] = 1;
+                for (int i = 0; i < 3; i++)
+                {
+                    int value;
+                    if (i == 0)
+                    {
+                     
+                        if (frequencies.TryGetValue(pixel.red,out value))
+                            frequencies[pixel.red]=value+1;
+                        else
+                            frequencies[pixel.red] = 1;
+                    }
+                   else if (i == 1)
+                    {
+                        if (frequencies.TryGetValue(pixel.green, out value))
+                            frequencies[pixel.green]=value+1;
+                        else
+                            frequencies[pixel.green] = 1;
+                    }
+                    else
+                    {
+                        if (frequencies.TryGetValue(pixel.blue, out value))
+                            frequencies[pixel.blue]=value;
+                        else
+                            frequencies[pixel.blue] = 1;
+                    }
+                }
             }
 
 
             HuffmanNode root =BuildHuffmanTree(frequencies);
 
            
-            Dictionary<int, string> huffmanCodes = BuildHuffmanCodes(root);
+            Dictionary<byte, string> huffmanCodes = BuildHuffmanCodes(root);
 
             
             List<bool> encodedBits = new List<bool>();
             foreach (var pixel in image)
             {
-                int pixelValue = pixel.red << 16 | pixel.green << 8 | pixel.blue;
-                string code = huffmanCodes[pixelValue];
-                foreach (char bit in code)
+                for (int i = 0; i < 3; i++)
                 {
-                    encodedBits.Add(bit == '1');
+                    if (i == 0)
+                    {
+                        string code = huffmanCodes[pixel.red];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+                    }
+                    else if(i == 1)
+                    {
+                        string code = huffmanCodes[pixel.green];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+                    }
+                    else
+                    {
+                        string code = huffmanCodes[pixel.blue];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+
+                    }
                 }
             }
 
@@ -222,10 +278,7 @@ namespace ImageEncryptCompress
                 }
                 encodedBytes.Add(currentByte);
             }
-            /* using (FileStream output = new FileStream(outputFilePath, FileMode.Create))
-             {
-                 output.Write(encodedBytes.ToArray(), 0, encodedBytes.Count);
-             }*/
+ 
             FileStream file = File.Open(outputFilePath, FileMode.Create);
             using (BinaryWriter output =new BinaryWriter(file))
             {
@@ -234,8 +287,6 @@ namespace ImageEncryptCompress
                 output.Write(GetHeight(image));
                 output.Write(GetWidth(image));
                 output.Write(encodedBytes.ToArray());
-                
-                
             }
           
 
