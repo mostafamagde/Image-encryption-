@@ -53,7 +53,6 @@ namespace ImageEncryptCompress
         {
             HuffmanNode root;
             int width,height;
-           
             byte[] encodedBytes;
             using (FileStream fileStream = new FileStream(path, FileMode.Open))
             {
@@ -76,6 +75,7 @@ namespace ImageEncryptCompress
             Dictionary<string,int> huffmanCodes=   ReBuildHuffmanCodes(root);
             string result = "";
             int w=0, h=0;
+
             foreach (byte b in encodedBytes)
             {
                 for (int i = 7; i >= 0; i--)
@@ -97,6 +97,7 @@ namespace ImageEncryptCompress
                             w = 0;
                             h++;
                         }
+                        result = "";
                     }
                     
                 }
