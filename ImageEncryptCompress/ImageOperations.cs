@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,12 +22,12 @@ namespace ImageEncryptCompress
     {
         public double red, green, blue;
     }
-    
-  
+
+
     /// <summary>
     /// Library of static functions that deal with images
     /// </summary>
-    public class ImageOperations
+    public class ImageOperations 
     {
         /// <summary>
         /// Open an image and load it into 2D array of colors (size: Height x Width)
@@ -34,7 +35,7 @@ namespace ImageEncryptCompress
         /// <param name="ImagePath">Image file path</param>
         /// <returns>2D array of colors</returns>
         /// 
-        static string Generatekey(string init_sead, int tap_position, int k)
+        public static byte Generatekey(string init_sead, int tap_position, int k)
         {
             string Initial_seed = string.Copy(init_sead);
             while (k > 0)
@@ -46,8 +47,37 @@ namespace ImageEncryptCompress
                 Initial_seed = Initial_seed.Insert(Initial_seed.Length, (leftBit ^ tapBit).ToString());
                 Initial_seed = Initial_seed.Remove(0, 1);
             }
-            return Initial_seed;
+            string final_key = Initial_seed.Substring(3);
+            int conv = Convert.ToInt32(final_key, 2);
+            byte conv2 = Convert.ToByte(conv);
+            return conv2;
         }
+
+
+        public static RGBPixel[,] Encrypt(RGBPixel[,] Image, string init_seed, int tap_pos)
+        {
+            
+            for (int i = 0; i < Image.GetLength(0); i++)
+            {
+                for (int j = 0; j < Image.GetLength(1); j++)
+                {
+                    int red_key = Generatekey(init_seed, tap_pos, i) ^ Image[i, j].red;
+                    Image[i, j].red = Convert.ToByte(red_key);
+
+                    int blue_key = Generatekey(init_seed, tap_pos, j) ^ Image[i, j].blue;
+                    Image[i, j].blue = Convert.ToByte(blue_key);
+
+                    int green_key = Generatekey(init_seed, tap_pos, i + j) ^ Image[i, j].green;
+                    Image[i, j].green = Convert.ToByte(green_key);
+                }
+
+
+            }
+
+            return Image;
+
+        }
+
         public static RGBPixel[,] OpenImage(string ImagePath)
         {
             Bitmap original_bm = new Bitmap(ImagePath);
@@ -107,7 +137,7 @@ namespace ImageEncryptCompress
 
             return Buffer;
         }
-        
+
         /// <summary>
         /// Get the height of the image 
         /// </summary>
@@ -167,13 +197,13 @@ namespace ImageEncryptCompress
         }
 
 
-       /// <summary>
-       /// Apply Gaussian smoothing filter to enhance the edge detection 
-       /// </summary>
-       /// <param name="ImageMatrix">Colored image matrix</param>
-       /// <param name="filterSize">Gaussian mask size</param>
-       /// <param name="sigma">Gaussian sigma</param>
-       /// <returns>smoothed color image</returns>
+        /// <summary>
+        /// Apply Gaussian smoothing filter to enhance the edge detection 
+        /// </summary>
+        /// <param name="ImageMatrix">Colored image matrix</param>
+        /// <param name="filterSize">Gaussian mask size</param>
+        /// <param name="sigma">Gaussian sigma</param>
+        /// <returns>smoothed color image</returns>
         public static RGBPixel[,] GaussianFilter1D(RGBPixel[,] ImageMatrix, int filterSize, double sigma)
         {
             int Height = GetHeight(ImageMatrix);
@@ -182,7 +212,7 @@ namespace ImageEncryptCompress
             RGBPixelD[,] VerFiltered = new RGBPixelD[Height, Width];
             RGBPixel[,] Filtered = new RGBPixel[Height, Width];
 
-           
+
             // Create Filter in Spatial Domain:
             //=================================
             //make the filter ODD size
