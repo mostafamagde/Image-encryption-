@@ -333,7 +333,8 @@ namespace ImageEncryptCompress
 
 
             }
-
+         
+           
             return Image;
 
         }
@@ -394,9 +395,8 @@ namespace ImageEncryptCompress
                 }
                 original_bm.UnlockBits(bmd);
             }
-            CompressImage(Buffer, "D://study//algo/.bin");
-            return Decompress("D://study//algo/.bin");
-            //return Buffer;
+         
+            return Buffer;
         }
 
         /// <summary>
