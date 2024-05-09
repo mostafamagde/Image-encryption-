@@ -5,6 +5,11 @@ using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.IO.Pipes;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -18,6 +23,16 @@ namespace ImageEncryptCompress
     {
         public byte red, green, blue;
     }
+    [Serializable]
+    public class HuffmanNode
+    {
+        public byte Value;
+        public int Frequency;
+        public HuffmanNode Left;
+        public HuffmanNode Right;
+        public string Identifier;
+    }
+
     public struct RGBPixelD
     {
         public double red, green, blue;
@@ -35,6 +50,251 @@ namespace ImageEncryptCompress
         /// <param name="ImagePath">Image file path</param>
         /// <returns>2D array of colors</returns>
         /// 
+     public static RGBPixel[,] Decompress(string path)
+        {
+            HuffmanNode root;
+            int width,height;
+            byte[] encodedBytes;
+            using (FileStream fileStream = new FileStream(path, FileMode.Open))
+            {
+                // Deserialize Huffman tree
+                IFormatter formatter = new BinaryFormatter();
+                 root = (HuffmanNode)formatter.Deserialize(fileStream);
+
+                // Read height and width
+                using (BinaryReader reader = new BinaryReader(fileStream))
+                { 
+                    height = reader.ReadInt32();
+                    width = reader.ReadInt32();
+                    int encodedBytesLength = (int)(fileStream.Length - sizeof(int) * 2);
+                    encodedBytes = reader.ReadBytes(encodedBytesLength);
+                }
+
+             
+            }
+            RGBPixel[,] image = new RGBPixel[height, width];
+            Dictionary<string,byte> huffmanCodes=   ReBuildHuffmanCodes(root);
+            string result = "";
+            int w=0, h=0;
+            int count = 0;
+            foreach (byte b in encodedBytes)
+            {
+                for (int i = 7; i >= 0; i--)
+                {
+                   
+                    bool bit = ((b >> i) & 1) == 1;
+
+                    char s = bit ? '1' : '0';
+                    result = $"{result}{s}";
+                    byte value;
+                    if (huffmanCodes.TryGetValue(result,out value))
+                    {               
+                        if (count % 3 == 0)
+                        {
+                            image[h, w].red = value;
+                        }
+                        else if(count % 3 ==1)
+                        {
+                            image[h, w].green= value;
+                        }
+                        else
+                        {
+                            image[h, w].blue= value; 
+                        }
+                        count++;
+                        if (count % 3==0)
+                        {
+                            w++;
+                            if (w == width)
+                            {
+                                w = 0;
+                                h++;
+                            }
+                        }
+                        result = "";
+                    }
+                    
+                }
+            }
+            return image;
+        }
+        public static Dictionary<string, byte> ReBuildHuffmanCodes(HuffmanNode root)
+        {
+            Dictionary<string, byte> codes = new Dictionary<string, byte>();
+            ReBuildHuffmanCodesRecursive(root, "", codes);
+            return codes;
+        }
+
+        private static void ReBuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<string,byte> codes)
+        {
+            if (node == null)
+                return;
+
+            if (node.Left == null && node.Right == null)
+            {
+                codes.Add( code, node.Value);
+                return;
+            }
+
+            ReBuildHuffmanCodesRecursive(node.Left, code + "0", codes);
+            ReBuildHuffmanCodesRecursive(node.Right, code + "1", codes);
+        }
+        public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
+        {
+             int identifierCounter = 0;
+            var priorityQueue = new SortedDictionary<(int Frequency, string Identifier), HuffmanNode>();
+
+            foreach (var kvp in frequencies)
+            {
+                priorityQueue.Add((kvp.Value, identifierCounter.ToString()), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter.ToString() });
+                identifierCounter++; // Increment the counter for the next identifier
+            }
+
+            while (priorityQueue.Count > 1)
+            {
+                var firstPair = priorityQueue.First();
+                priorityQueue.Remove(firstPair.Key);
+                var secondPair = priorityQueue.First();
+                priorityQueue.Remove(secondPair.Key);
+
+                var merged = new HuffmanNode
+                {
+                    Left = firstPair.Value,
+                    Right = secondPair.Value,
+                    Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
+                    Identifier = identifierCounter.ToString()
+                };
+
+                priorityQueue.Add((merged.Frequency, merged.Identifier), merged);
+                identifierCounter++; // Increment the counter for the next identifier
+            }
+
+            return priorityQueue.First().Value;
+        }
+        public static Dictionary<byte, string> BuildHuffmanCodes(HuffmanNode root)
+        {
+            var codes = new Dictionary<byte, string>();
+            BuildHuffmanCodesRecursive(root, "", codes);
+            return codes;
+        }
+
+        private static void BuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<byte, string> codes)
+        {
+            if (node == null)
+                return;
+
+            if (node.Left == null && node.Right == null)
+            {
+                codes.Add(node.Value, code);
+                return;
+            }
+
+            BuildHuffmanCodesRecursive(node.Left, code + "0", codes);
+            BuildHuffmanCodesRecursive(node.Right, code + "1", codes);
+        }
+        public static void CompressImage(RGBPixel[,] image, string outputFilePath)
+        {
+            Dictionary<byte, int> frequencies = new Dictionary<byte, int>();
+            foreach (var pixel in image)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    int value;
+                    if (i == 0)
+                    {
+                     
+                        if (frequencies.TryGetValue(pixel.red,out value))
+                            frequencies[pixel.red]=value+1;
+                        else
+                            frequencies[pixel.red] = 1;
+                    }
+                   else if (i == 1)
+                    {
+                        if (frequencies.TryGetValue(pixel.green, out value))
+                            frequencies[pixel.green]=value+1;
+                        else
+                            frequencies[pixel.green] = 1;
+                    }
+                    else
+                    {
+                        if (frequencies.TryGetValue(pixel.blue, out value))
+                            frequencies[pixel.blue]=value;
+                        else
+                            frequencies[pixel.blue] = 1;
+                    }
+                }
+            }
+
+
+            HuffmanNode root =BuildHuffmanTree(frequencies);
+
+           
+            Dictionary<byte, string> huffmanCodes = BuildHuffmanCodes(root);
+
+            
+            List<bool> encodedBits = new List<bool>();
+            foreach (var pixel in image)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (i == 0)
+                    {
+                        string code = huffmanCodes[pixel.red];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+                    }
+                    else if(i == 1)
+                    {
+                        string code = huffmanCodes[pixel.green];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+                    }
+                    else
+                    {
+                        string code = huffmanCodes[pixel.blue];
+                        foreach (char bit in code)
+                        {
+                            encodedBits.Add(bit == '1');
+                        }
+
+                    }
+                }
+            }
+
+            // Convert bits to bytes
+            List<byte> encodedBytes = new List<byte>();
+            for (int i = 0; i < encodedBits.Count; i += 8)
+            {
+                byte currentByte = 0;
+                for (int j = 0; j < 8 && i + j < encodedBits.Count; j++)
+                {
+                    if (encodedBits[i + j])
+                    {
+                        currentByte |= (byte)(1 << (7 - j));
+                    }
+                }
+                encodedBytes.Add(currentByte);
+            }
+ 
+            FileStream file = File.Open(outputFilePath, FileMode.Create);
+            using (BinaryWriter output =new BinaryWriter(file))
+            {
+                IFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(output.BaseStream, root);
+                output.Write(GetHeight(image));
+                output.Write(GetWidth(image));
+                output.Write(encodedBytes.ToArray());
+            }
+          
+
+
+            Console.WriteLine("Image compression completed.");
+        
+    }
         public static byte Generatekey(string init_sead, int tap_position, int k)
         {
             string Initial_seed = string.Copy(init_sead);
@@ -73,7 +333,8 @@ namespace ImageEncryptCompress
 
 
             }
-
+         
+           
             return Image;
 
         }
@@ -134,7 +395,7 @@ namespace ImageEncryptCompress
                 }
                 original_bm.UnlockBits(bmd);
             }
-
+         
             return Buffer;
         }
 
