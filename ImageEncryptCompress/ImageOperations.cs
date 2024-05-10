@@ -297,7 +297,7 @@ namespace ImageEncryptCompress
             }
 
 
-
+            //write
             Console.WriteLine("Image compression completed.");
 
         }
