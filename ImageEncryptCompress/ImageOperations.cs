@@ -66,32 +66,28 @@ namespace ImageEncryptCompress
             Dictionary<byte, int> frequenciesBlue = new Dictionary<byte, int>();
             foreach (var pixel in image)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    int value;
-                    if (i == 0)
-                    {
 
-                        if (frequenciesRed.TryGetValue(pixel.red, out value))
-                            frequenciesRed[pixel.red] = value + 1;
-                        else
-                            frequenciesRed[pixel.red] = 1;
-                    }
-                    else if (i == 1)
-                    {
-                        if (frequenciesGreen.TryGetValue(pixel.green, out value))
-                            frequenciesGreen[pixel.green] = value + 1;
-                        else
-                            frequenciesGreen[pixel.green] = 1;
-                    }
-                    else
-                    {
-                        if (frequenciesBlue.TryGetValue(pixel.blue, out value))
-                            frequenciesBlue[pixel.blue] = value;
-                        else
-                            frequenciesBlue[pixel.blue] = 1;
-                    }
-                }
+                int value;
+
+
+                if (frequenciesRed.TryGetValue(pixel.red, out value))
+                    frequenciesRed[pixel.red] = value + 1;
+                else
+                    frequenciesRed[pixel.red] = 1;
+
+
+                if (frequenciesGreen.TryGetValue(pixel.green, out value))
+                    frequenciesGreen[pixel.green] = value + 1;
+                else
+                    frequenciesGreen[pixel.green] = 1;
+
+
+                if (frequenciesBlue.TryGetValue(pixel.blue, out value))
+                    frequenciesBlue[pixel.blue] = value+1;
+                else
+                    frequenciesBlue[pixel.blue] = 1;
+
+
             }
 
 
@@ -110,20 +106,13 @@ namespace ImageEncryptCompress
             int height = GetHeight(image);
             int w = 0;
             foreach (var pixel in image)
-            {
-
-                for (int i = 0; i < 3; i++)
-                {
-                    if (i == 0)
-                    {
+            {   
                         string code = huffmanCodesRed[pixel.red];
                         foreach (char bit in code)
                         {
                             if (bit == '1')
                             {
                                 currentRedByte |= (byte)(1 << (7 - countRed));
-
-
                             }
                             countRed++;
                             if (countRed == 8)
@@ -134,12 +123,7 @@ namespace ImageEncryptCompress
                             }
 
                         }
-
-
-                    }
-                    else if (i == 1)
-                    {
-                        string code = huffmanCodesGreen[pixel.green];
+                         code = huffmanCodesGreen[pixel.green];
                         foreach (char bit in code)
                         {
                             if (bit == '1')
@@ -155,11 +139,7 @@ namespace ImageEncryptCompress
                                 countGreen = 0;
                             }
                         }
-
-                    }
-                    else
-                    {
-                        string code = huffmanCodesBlue[pixel.blue];
+                         code = huffmanCodesBlue[pixel.blue];
                         foreach (char bit in code)
                         {
                             if (bit == '1')
@@ -175,11 +155,8 @@ namespace ImageEncryptCompress
                                 currentBlueByte = 0;
                                 countBlue = 0;
                             }
-                        }
-
-
-                    }
-                }
+                        }   
+                
                 w++;
             }
             if (currentRedByte != 0)
@@ -200,6 +177,7 @@ namespace ImageEncryptCompress
                 currentGreenByte = 0;
                 countGreen = 0;
             }
+         
             FileStream file = File.Open(outputFilePath, FileMode.Create);
             using (BinaryWriter output = new BinaryWriter(file))
             {
@@ -218,7 +196,7 @@ namespace ImageEncryptCompress
                 output.Write(encodedBytesBlue.Count);
                 output.Write(encodedBytesBlue.ToArray());
             }
-
+            file.Close();
             Console.WriteLine("Image compression completed.");
 
         }
@@ -411,8 +389,8 @@ namespace ImageEncryptCompress
 
                 var merged = new HuffmanNode
                 {
-                    Left = firstPair.Value,
-                    Right = secondPair.Value,
+                    Right = firstPair.Value,
+                    Left = secondPair.Value,
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
                     Identifier = identifierCounter.ToString()
                 };
@@ -571,10 +549,10 @@ namespace ImageEncryptCompress
                 }
                 original_bm.UnlockBits(bmd);
             }
-       
+
             //compress decompress save file
-            CompressImage(Buffer, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
-            RGBPixel[,] afterDecompression = Decompress("C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
+            CompressImage(Buffer, "D://study//algo/.bin");
+            RGBPixel[,] afterDecompression = Decompress("D://study//algo/.bin");
             int width = GetWidth(afterDecompression);
             int height = GetHeight(afterDecompression);
             Bitmap bitmap = new Bitmap(width, height);
@@ -595,7 +573,7 @@ namespace ImageEncryptCompress
                 bitmap.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
             }
 
-            return afterDecompression;
+            return Buffer;
             //return Buffer;
         }
 
