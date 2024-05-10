@@ -10,6 +10,7 @@ using System.Linq;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
+using System.Data.SqlTypes;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -302,14 +303,7 @@ namespace ImageEncryptCompress
         }
         public static string[] Generatekey(string init_sead, int tap_position)
         {
-            if (init_sead.Length < 11)
-            {
-                for (int i = 0; i < 11 - init_sead.Length; i++)
-                {
-                    init_sead = "0" + init_sead;
-
-                }
-            }
+           
             string Initial_seed = string.Copy(init_sead);
 
             string compelet_key = null;
@@ -319,15 +313,15 @@ namespace ImageEncryptCompress
 
 
                 char leftBit = Initial_seed[0];
-                char tapBit = Initial_seed[Initial_seed.Length - 1 - tap_position];
-                int key = leftBit ^ tapBit;
-                Initial_seed = Initial_seed.Insert(Initial_seed.Length, key.ToString());
-                Initial_seed = Initial_seed.Remove(0, 1);
-                compelet_key = compelet_key + Convert.ToString(key);
+                char tapBit = Initial_seed[Initial_seed.Length - tap_position-1];
+                string key = Convert.ToString(leftBit ^ tapBit);
+                
+                Initial_seed = Initial_seed.Substring(1)+key;
+                compelet_key = compelet_key + key;
 
             }
             string[] final = new string[2];
-            final[0] = compelet_key.Substring(compelet_key.Length - 8);
+            final[0] = compelet_key;
             final[1] = Initial_seed;
             return final;
 
@@ -340,27 +334,24 @@ namespace ImageEncryptCompress
             x.sed = init_seed;
             string[] seed_key = new string[2];
 
-            for (int i = 0; i < Image.GetLength(0); i++)
+            for (int i = 0; i < GetHeight(Image); i++)
             {
-                for (int j = 0; j < Image.GetLength(1); j++)
+                for (int j = 0; j < GetWidth(Image); j++)
                 {
                     seed_key = Generatekey(x.sed, tap_pos);
 
-                    int red_key = Convert.ToInt32(Image[i, j].red) ^ Convert.ToInt32(seed_key[0]);
-                    Image[i, j].red = (byte)red_key;
+                    Image[i, j].red = Convert.ToByte( Image[i, j].red ^ Convert.ToInt32(seed_key[0],2));
+                  
 
                     x.sed = seed_key[1];
                     seed_key = Generatekey(x.sed, tap_pos);
 
-                    int green_key = Convert.ToInt32(Image[i, j].green) ^ Convert.ToInt32(seed_key[0]);
-                    Image[i, j].green = (byte)green_key;
-
+                    Image[i, j].green = Convert.ToByte(Image[i, j].green^ Convert.ToInt32(seed_key[0], 2));
 
                     x.sed = seed_key[1];
                     seed_key = Generatekey(x.sed, tap_pos);
 
-                    int blue_key = Convert.ToInt32(Image[i, j].blue) ^ Convert.ToInt32(seed_key[0]);
-                    Image[i, j].blue = (byte)blue_key;
+                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
 
                     x.sed = seed_key[1];
 

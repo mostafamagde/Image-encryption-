@@ -38,7 +38,7 @@ namespace ImageEncryptCompress
             double sigma = double.Parse(txtGaussSigma.Text);
             int maskSize = (int)nudMaskSize.Value ;
             ImageMatrix = ImageOperations.GaussianFilter1D(ImageMatrix, maskSize, sigma);
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+            ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
         }
 
         private void label9_Click(object sender, EventArgs e)
@@ -59,7 +59,7 @@ namespace ImageEncryptCompress
         private void button1_Click(object sender, EventArgs e)
         {
             ImageMatrix = ImageOperations.Encrypt(ImageMatrix , Seed_Box.Text,(int) K_value.Value);
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
+            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
@@ -73,6 +73,11 @@ namespace ImageEncryptCompress
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
         {
 
         }
