@@ -305,12 +305,7 @@ namespace ImageEncryptCompress
             this.K_value.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.K_value.Location = new System.Drawing.Point(1236, 433);
             this.K_value.Maximum = new decimal(new int[] {
-            11,
-            0,
-            0,
-            0});
-            this.K_value.Minimum = new decimal(new int[] {
-            3,
+            99999,
             0,
             0,
             0});
@@ -352,6 +347,7 @@ namespace ImageEncryptCompress
             this.Controls.Add(this.btnOpen);
             this.Name = "MainForm";
             this.Text = "Image Enctryption and Compression...";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaskSize)).EndInit();
