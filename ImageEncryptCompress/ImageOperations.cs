@@ -23,6 +23,10 @@ namespace ImageEncryptCompress
     /// <summary>
     /// Holds the pixel color in 3 byte values: red, green and blue
     /// </summary>
+    public class seed
+    {
+        public string sed;
+    }
     public struct RGBPixel
     {
         public byte red, green, blue;
@@ -442,48 +446,75 @@ namespace ImageEncryptCompress
             BuildHuffmanCodesRecursive(node.Right, code + "1", codes);
         }
 
-        public static byte Generatekey(string init_sead, int tap_position, int k)
+        public static string[] Generatekey(string init_sead, int tap_position)
         {
+
             string Initial_seed = string.Copy(init_sead);
-            while (k > 0)
+
+            string compelet_key = null;
+
+            for (int i = 0; i < 8; i++)
             {
-                k--;
+
 
                 char leftBit = Initial_seed[0];
-                char tapBit = Initial_seed[Initial_seed.Length - 1 - tap_position];
-                Initial_seed = Initial_seed.Insert(Initial_seed.Length, (leftBit ^ tapBit).ToString());
-                Initial_seed = Initial_seed.Remove(0, 1);
+                char tapBit = Initial_seed[Initial_seed.Length - tap_position - 1];
+                string key = Convert.ToString(leftBit ^ tapBit);
+
+                Initial_seed = Initial_seed.Substring(1) + key;
+                compelet_key = compelet_key + key;
+
             }
-            string final_key = Initial_seed.Substring(3);
-            int conv = Convert.ToInt32(final_key, 2);
-            byte conv2 = Convert.ToByte(conv);
-            return conv2;
+            string[] final = new string[2];
+            final[0] = compelet_key;
+            final[1] = Initial_seed;
+            return final;
+
         }
+
 
         public static RGBPixel[,] Encrypt(RGBPixel[,] Image, string init_seed, int tap_pos)
         {
+            seed x = new seed();
+            x.sed = init_seed;
+            string[] seed_key = new string[2];
 
-            for (int i = 0; i < Image.GetLength(0); i++)
+            for (int i = 0; i < GetHeight(Image); i++)
             {
-                for (int j = 0; j < Image.GetLength(1); j++)
+                for (int j = 0; j < GetWidth(Image); j++)
                 {
-                    int red_key = Generatekey(init_seed, tap_pos, i) ^ Image[i, j].red;
-                    Image[i, j].red = Convert.ToByte(red_key);
+                    seed_key = Generatekey(x.sed, tap_pos);
 
-                    int blue_key = Generatekey(init_seed, tap_pos, j) ^ Image[i, j].blue;
-                    Image[i, j].blue = Convert.ToByte(blue_key);
+                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(seed_key[0], 2));
 
-                    int green_key = Generatekey(init_seed, tap_pos, i + j) ^ Image[i, j].green;
-                    Image[i, j].green = Convert.ToByte(green_key);
+
+                    x.sed = seed_key[1];
+                    seed_key = Generatekey(x.sed, tap_pos);
+
+                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(seed_key[0], 2));
+
+                    x.sed = seed_key[1];
+                    seed_key = Generatekey(x.sed, tap_pos);
+
+                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
+
+                    x.sed = seed_key[1];
+
+                    //int blue_key = Generatekey(copy, tap_pos) ^ Image[i, j].blue;
+                    //Image[i, j].blue = Convert.ToByte(blue_key);
+
+                    //int green_key = Generatekey(copy, tap_pos) ^ Image[i, j].green;
+                    //Image[i, j].green = Convert.ToByte(green_key);
+
                 }
 
 
             }
 
+            //CompressImage(Image, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
             return Image;
 
         }
-
         public static RGBPixel[,] OpenImage(string ImagePath)
         {
             Bitmap original_bm = new Bitmap(ImagePath);
@@ -540,10 +571,10 @@ namespace ImageEncryptCompress
                 }
                 original_bm.UnlockBits(bmd);
             }
-            
-
-            CompressImage(Buffer, "D://study//algo/.bin");
-            RGBPixel[,] afterDecompression = Decompress("D://study//algo/.bin");
+       
+            //compress decompress save file
+            CompressImage(Buffer, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
+            RGBPixel[,] afterDecompression = Decompress("C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
             int width = GetWidth(afterDecompression);
             int height = GetHeight(afterDecompression);
             Bitmap bitmap = new Bitmap(width, height);
