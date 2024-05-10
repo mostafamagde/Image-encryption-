@@ -414,8 +414,6 @@ namespace ImageEncryptCompress
                 currentGreenByte = 0;
                 countGreen = 0;
             }
-           
-
             FileStream file = File.Open(outputFilePath, FileMode.Create);
             using (BinaryWriter output =new BinaryWriter(file))
             {
