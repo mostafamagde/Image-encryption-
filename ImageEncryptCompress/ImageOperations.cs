@@ -10,7 +10,7 @@ using System.Linq;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
-using System.Data.SqlTypes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -20,10 +20,6 @@ namespace ImageEncryptCompress
     /// <summary>
     /// Holds the pixel color in 3 byte values: red, green and blue
     /// </summary>
-    public class seed
-    {
-        public string sed;
-    }
     public struct RGBPixel
     {
         public byte red, green, blue;
@@ -56,74 +52,153 @@ namespace ImageEncryptCompress
         /// <returns>2D array of colors</returns>
         /// 
 
+
         public static RGBPixel[,] Decompress(string path)
         {
-            HuffmanNode root;
+            HuffmanNode rootRed, rootGreen, rootBlue;
             int width, height;
-            byte[] encodedBytes;
-            using (FileStream fileStream = new FileStream(path, FileMode.Open))
+            byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
+            FileStream fileStream = File.Open(path, FileMode.Open);
+            using (BinaryReader reader = new BinaryReader(fileStream))
             {
                 // Deserialize Huffman tree
                 IFormatter formatter = new BinaryFormatter();
-                root = (HuffmanNode)formatter.Deserialize(fileStream);
+                rootRed = (HuffmanNode)formatter.Deserialize(fileStream);
+                rootGreen = (HuffmanNode)formatter.Deserialize(fileStream);
+                rootBlue = (HuffmanNode)formatter.Deserialize(fileStream);
 
                 // Read height and width
-                using (BinaryReader reader = new BinaryReader(fileStream))
-                {
-                    height = reader.ReadInt32();
-                    width = reader.ReadInt32();
-                    int encodedBytesLength = (int)(fileStream.Length - sizeof(int) * 2);
-                    encodedBytes = reader.ReadBytes(encodedBytesLength);
-                }
 
+                height = reader.ReadInt32();
+                width = reader.ReadInt32();
+                int encodedBytesRedLength = reader.ReadInt32();
+                encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
+
+                int encodedBytesGreenLength = reader.ReadInt32();
+                encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
+
+                int encodedBytesBlueLength = reader.ReadInt32();
+                encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
 
             }
+
             RGBPixel[,] image = new RGBPixel[height, width];
-            Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
-            string result = "";
-            int w = 0, h = 0;
-            int count = 0;
-            foreach (byte b in encodedBytes)
+            //Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
+            // Decode Huffman-encoded bits and reconstruct image pixels
+            int h = 0, w = 0;
+            HuffmanNode current = rootRed;
+            foreach (byte b in encodedBytesRed)
             {
                 for (int i = 7; i >= 0; i--)
                 {
-
                     bool bit = ((b >> i) & 1) == 1;
 
-                    char s = bit ? '1' : '0';
-                    result = $"{result}{s}";
-                    byte value;
-                    if (huffmanCodes.TryGetValue(result, out value))
+
+
+                    if (current.Left == null && current.Right == null)
                     {
-                        if (count % 3 == 0)
+
+                        image[h, w].red = current.Value;
+
+
+                        w++;
+                        if (w == width)
                         {
-                            image[h, w].red = value;
+                            w = 0;
+                            h++;
+                            if (h == height)
+                                break;
                         }
-                        else if (count % 3 == 1)
-                        {
-                            image[h, w].green = value;
-                        }
-                        else
-                        {
-                            image[h, w].blue = value;
-                        }
-                        count++;
-                        if (count % 3 == 0)
-                        {
-                            w++;
-                            if (w == width)
-                            {
-                                w = 0;
-                                h++;
-                            }
-                        }
-                        result = "";
+
+
+                        current = rootRed;
                     }
+                    if (bit)
+                        current = current.Right;
+                    else
+                        current = current.Left;
+                }
+
+
+            }
+            h = 0;
+            w = 0;
+            current = rootGreen;
+            foreach (byte b in encodedBytesGreen)
+            {
+                for (int i = 7; i >= 0; i--)
+                {
+                    bool bit = ((b >> i) & 1) == 1;
+
+
+
+                    if (current.Left == null && current.Right == null)
+                    {
+
+                        image[h, w].green = current.Value;
+
+
+                        w++;
+                        if (w == width)
+                        {
+                            w = 0;
+                            h++;
+                            if (h == height)
+                                break;
+
+                        }
+
+
+                        current = rootGreen;
+                    }
+                    if (bit)
+                        current = current.Right;
+                    else
+                        current = current.Left;
 
                 }
+
+            }
+
+            h = 0;
+            w = 0;
+            current = rootBlue;
+            foreach (byte b in encodedBytesBlue)
+            {
+                for (int i = 7; i >= 0; i--)
+                {
+                    bool bit = ((b >> i) & 1) == 1;
+
+
+
+                    if (current.Left == null && current.Right == null)
+                    {
+
+                        image[h, w].blue = current.Value;
+
+
+                        w++;
+                        if (w == width)
+                        {
+                            w = 0;
+                            h++;
+                            if (h == height)
+                                break;
+                        }
+
+
+                        current = rootBlue;
+                    }
+                    if (bit)
+                        current = current.Right;
+                    else
+                        current = current.Left;
+                }
+
             }
             return image;
         }
+
         public static Dictionary<string, byte> ReBuildHuffmanCodes(HuffmanNode root)
         {
             Dictionary<string, byte> codes = new Dictionary<string, byte>();
@@ -200,7 +275,9 @@ namespace ImageEncryptCompress
         }
         public static void CompressImage(RGBPixel[,] image, string outputFilePath)
         {
-            Dictionary<byte, int> frequencies = new Dictionary<byte, int>();
+            Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
+            Dictionary<byte, int> frequenciesGreen = new Dictionary<byte, int>();
+            Dictionary<byte, int> frequenciesBlue = new Dictionary<byte, int>();
             foreach (var pixel in image)
             {
                 for (int i = 0; i < 3; i++)
@@ -209,163 +286,193 @@ namespace ImageEncryptCompress
                     if (i == 0)
                     {
 
-                        if (frequencies.TryGetValue(pixel.red, out value))
-                            frequencies[pixel.red] = value + 1;
+                        if (frequenciesRed.TryGetValue(pixel.red, out value))
+                            frequenciesRed[pixel.red] = value + 1;
                         else
-                            frequencies[pixel.red] = 1;
+                            frequenciesRed[pixel.red] = 1;
                     }
                     else if (i == 1)
                     {
-                        if (frequencies.TryGetValue(pixel.green, out value))
-                            frequencies[pixel.green] = value + 1;
+                        if (frequenciesGreen.TryGetValue(pixel.green, out value))
+                            frequenciesGreen[pixel.green] = value + 1;
                         else
-                            frequencies[pixel.green] = 1;
+                            frequenciesGreen[pixel.green] = 1;
                     }
                     else
                     {
-                        if (frequencies.TryGetValue(pixel.blue, out value))
-                            frequencies[pixel.blue] = value;
+                        if (frequenciesBlue.TryGetValue(pixel.blue, out value))
+                            frequenciesBlue[pixel.blue] = value;
                         else
-                            frequencies[pixel.blue] = 1;
+                            frequenciesBlue[pixel.blue] = 1;
                     }
                 }
             }
 
 
-            HuffmanNode root = BuildHuffmanTree(frequencies);
-
-
-            Dictionary<byte, string> huffmanCodes = BuildHuffmanCodes(root);
-
-
-            List<bool> encodedBits = new List<bool>();
+            HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
+            HuffmanNode rootGreen = BuildHuffmanTree(frequenciesGreen);
+            HuffmanNode rootBlue = BuildHuffmanTree(frequenciesBlue);
+            Dictionary<byte, string> huffmanCodesRed = BuildHuffmanCodes(rootRed);
+            Dictionary<byte, string> huffmanCodesGreen = BuildHuffmanCodes(rootGreen);
+            Dictionary<byte, string> huffmanCodesBlue = BuildHuffmanCodes(rootBlue);
+            List<byte> encodedBytesRed = new List<byte>();
+            List<byte> encodedBytesGreen = new List<byte>();
+            List<byte> encodedBytesBlue = new List<byte>();
+            int countRed = 0, countGreen = 0, countBlue = 0;
+            byte currentRedByte = 0, currentGreenByte = 0, currentBlueByte = 0;
+            int width = GetWidth(image);
+            int height = GetHeight(image);
+            int w = 0;
             foreach (var pixel in image)
             {
+
                 for (int i = 0; i < 3; i++)
                 {
                     if (i == 0)
                     {
-                        string code = huffmanCodes[pixel.red];
+                        string code = huffmanCodesRed[pixel.red];
                         foreach (char bit in code)
                         {
-                            encodedBits.Add(bit == '1');
+                            if (bit == '1')
+                            {
+                                currentRedByte |= (byte)(1 << (7 - countRed));
+
+
+                            }
+                            countRed++;
+                            if (countRed == 8)
+                            {
+                                encodedBytesRed.Add(currentRedByte);
+                                currentRedByte = 0;
+                                countRed = 0;
+                            }
+
                         }
+
+
                     }
                     else if (i == 1)
                     {
-                        string code = huffmanCodes[pixel.green];
+                        string code = huffmanCodesGreen[pixel.green];
                         foreach (char bit in code)
                         {
-                            encodedBits.Add(bit == '1');
+                            if (bit == '1')
+                            {
+                                currentGreenByte |= (byte)(1 << (7 - countGreen));
+
+                            }
+                            countGreen++;
+                            if (countGreen == 8)
+                            {
+                                encodedBytesGreen.Add(currentGreenByte);
+                                currentGreenByte = 0;
+                                countGreen = 0;
+                            }
                         }
+
                     }
                     else
                     {
-                        string code = huffmanCodes[pixel.blue];
+                        string code = huffmanCodesBlue[pixel.blue];
                         foreach (char bit in code)
                         {
-                            encodedBits.Add(bit == '1');
+                            if (bit == '1')
+                            {
+                                currentBlueByte |= (byte)(1 << (7 - countBlue));
+
+                            }
+                            countBlue++;
+                            if (countBlue == 8)
+                            {
+
+                                encodedBytesBlue.Add(currentBlueByte);
+                                currentBlueByte = 0;
+                                countBlue = 0;
+                            }
                         }
 
+
                     }
                 }
+                w++;
             }
-
-            // Convert bits to bytes
-            List<byte> encodedBytes = new List<byte>();
-            for (int i = 0; i < encodedBits.Count; i += 8)
+            if (currentRedByte != 0)
             {
-                byte currentByte = 0;
-                for (int j = 0; j < 8 && i + j < encodedBits.Count; j++)
-                {
-                    if (encodedBits[i + j])
-                    {
-                        currentByte |= (byte)(1 << (7 - j));
-                    }
-                }
-                encodedBytes.Add(currentByte);
+                encodedBytesRed.Add(currentRedByte);
+                currentRedByte = 0;
+                countRed = 0;
             }
-
+            if (currentBlueByte != 0)
+            {
+                encodedBytesBlue.Add(currentBlueByte);
+                currentBlueByte = 0;
+                countBlue = 0;
+            }
+            if (currentGreenByte != 0)
+            {
+                encodedBytesGreen.Add(currentGreenByte);
+                currentGreenByte = 0;
+                countGreen = 0;
+            }
             FileStream file = File.Open(outputFilePath, FileMode.Create);
             using (BinaryWriter output = new BinaryWriter(file))
             {
                 IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(output.BaseStream, root);
+                formatter.Serialize(output.BaseStream, rootRed);
+                formatter.Serialize(output.BaseStream, rootGreen);
+                formatter.Serialize(output.BaseStream, rootBlue);
                 output.Write(GetHeight(image));
                 output.Write(GetWidth(image));
-                output.Write(encodedBytes.ToArray());
+                output.Write(encodedBytesRed.Count);
+                output.Write(encodedBytesRed.ToArray());
+
+                output.Write(encodedBytesGreen.Count);
+                output.Write(encodedBytesGreen.ToArray());
+
+                output.Write(encodedBytesBlue.Count);
+                output.Write(encodedBytesBlue.ToArray());
             }
-
-
-            //write
             Console.WriteLine("Image compression completed.");
 
         }
-        public static string[] Generatekey(string init_sead, int tap_position)
+        public static byte Generatekey(string init_sead, int tap_position, int k)
         {
-           
             string Initial_seed = string.Copy(init_sead);
-
-            string compelet_key = null;
-
-            for (int i = 0; i < 8; i++)
+            while (k > 0)
             {
-
+                k--;
 
                 char leftBit = Initial_seed[0];
-                char tapBit = Initial_seed[Initial_seed.Length - tap_position-1];
-                string key = Convert.ToString(leftBit ^ tapBit);
-                
-                Initial_seed = Initial_seed.Substring(1)+key;
-                compelet_key = compelet_key + key;
-
+                char tapBit = Initial_seed[Initial_seed.Length - 1 - tap_position];
+                Initial_seed = Initial_seed.Insert(Initial_seed.Length, (leftBit ^ tapBit).ToString());
+                Initial_seed = Initial_seed.Remove(0, 1);
             }
-            string[] final = new string[2];
-            final[0] = compelet_key;
-            final[1] = Initial_seed;
-            return final;
-
+            string final_key = Initial_seed.Substring(3);
+            int conv = Convert.ToInt32(final_key, 2);
+            byte conv2 = Convert.ToByte(conv);
+            return conv2;
         }
 
 
         public static RGBPixel[,] Encrypt(RGBPixel[,] Image, string init_seed, int tap_pos)
         {
-            seed x = new seed();
-            x.sed = init_seed;
-            string[] seed_key = new string[2];
 
-            for (int i = 0; i < GetHeight(Image); i++)
+            for (int i = 0; i < Image.GetLength(0); i++)
             {
-                for (int j = 0; j < GetWidth(Image); j++)
+                for (int j = 0; j < Image.GetLength(1); j++)
                 {
-                    seed_key = Generatekey(x.sed, tap_pos);
+                    int red_key = Generatekey(init_seed, tap_pos, i) ^ Image[i, j].red;
+                    Image[i, j].red = Convert.ToByte(red_key);
 
-                    Image[i, j].red = Convert.ToByte( Image[i, j].red ^ Convert.ToInt32(seed_key[0],2));
-                  
+                    int blue_key = Generatekey(init_seed, tap_pos, j) ^ Image[i, j].blue;
+                    Image[i, j].blue = Convert.ToByte(blue_key);
 
-                    x.sed = seed_key[1];
-                    seed_key = Generatekey(x.sed, tap_pos);
-
-                    Image[i, j].green = Convert.ToByte(Image[i, j].green^ Convert.ToInt32(seed_key[0], 2));
-
-                    x.sed = seed_key[1];
-                    seed_key = Generatekey(x.sed, tap_pos);
-
-                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
-
-                    x.sed = seed_key[1];
-
-                    //int blue_key = Generatekey(copy, tap_pos) ^ Image[i, j].blue;
-                    //Image[i, j].blue = Convert.ToByte(blue_key);
-
-                    //int green_key = Generatekey(copy, tap_pos) ^ Image[i, j].green;
-                    //Image[i, j].green = Convert.ToByte(green_key);
-
+                    int green_key = Generatekey(init_seed, tap_pos, i + j) ^ Image[i, j].green;
+                    Image[i, j].green = Convert.ToByte(green_key);
                 }
 
 
             }
-
 
             return Image;
 
@@ -427,7 +534,7 @@ namespace ImageEncryptCompress
                 }
                 original_bm.UnlockBits(bmd);
             }
-
+            
             return Buffer;
         }
 
