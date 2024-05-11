@@ -59,6 +59,8 @@ namespace ImageEncryptCompress
         /// <returns>2D array of colors</returns>
         /// 
 
+        public static RGBPixel[,] afterDecompression;
+
         public static void CompressImage(RGBPixel[,] image, string outputFilePath)
         {
             Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
@@ -552,28 +554,11 @@ namespace ImageEncryptCompress
 
             //compress decompress save file
             string path = File.ReadAllText("path.txt");
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             CompressImage(Buffer, path);
-            RGBPixel[,] afterDecompression = Decompress(path);
-            int width = GetWidth(afterDecompression);
-            int height = GetHeight(afterDecompression);
-            Bitmap bitmap = new Bitmap(width, height);
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    RGBPixel pixel = afterDecompression[y, x];
-                    bitmap.SetPixel(x, y, Color.FromArgb(pixel.red, pixel.green, pixel.blue));
-                }
-            }
-
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
-            saveFileDialog1.RestoreDirectory = true;
-            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
-            {
-                bitmap.Save(saveFileDialog1.FileName, ImageFormat.Bmp);
-            }
-
+            afterDecompression = Decompress(path);
+            sw.Stop();
             return Buffer;
             //return Buffer;
         }
