@@ -63,7 +63,7 @@ namespace ImageEncryptCompress
             this.pictureBox1.Location = new System.Drawing.Point(4, 4);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(427, 360);
+            this.pictureBox1.Size = new System.Drawing.Size(561, 444);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
@@ -72,7 +72,7 @@ namespace ImageEncryptCompress
             this.pictureBox2.Location = new System.Drawing.Point(4, 4);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(412, 360);
+            this.pictureBox2.Size = new System.Drawing.Size(562, 444);
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
             // 
