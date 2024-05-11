@@ -103,8 +103,7 @@ namespace ImageEncryptCompress
             Stopwatch sw = new Stopwatch();
             sw.Start();
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            string path = File.ReadAllText("path.txt");
-            ImageOperations.CompressImage(ImageMatrixAfterOperation, path);
+            ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
             EncryptDecryptTime.Text = sw.Elapsed.ToString();
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
@@ -185,7 +184,7 @@ namespace ImageEncryptCompress
             if (Seed_Box.Text.Length <= K_value.Value)
             {
                 MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
-                K_value.Value = Seed_Box.Text.Length-1;
+                K_value.Value = Seed_Box.Text.Length - 1;
             }
         }
     }
