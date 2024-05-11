@@ -1,29 +1,29 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Image enc\\Image-encryption-\\",
+  "WorkspaceRootPath": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|d:\\image enc\\image-encryption-\\imageencryptcompress\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|D:\\Image enc\\Image-encryption-\\imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|D:\\Image enc\\Image-encryption-\\imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|D:\\Image enc\\Image-encryption-\\imageencryptcompress\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|E:\\Desktop Folders\\Algo\\Image-encryption-Project\\imageencryptcompress\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|D:\\Image enc\\Image-encryption-\\imageencryptcompress\\mainform.resx||{FF4D6ACA-9352-4A5F-821E-F4D6EBDCAB11}",
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|E:\\Desktop Folders\\Algo\\Image-encryption-Project\\imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|E:\\Desktop Folders\\Algo\\Image-encryption-Project\\imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|e:\\desktop folders\\algo\\image-encryption-project\\imageencryptcompress\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\imageoperations.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|E:\\Desktop Folders\\Algo\\Image-encryption-Project\\imageencryptcompress\\mainform.resx||{FF4D6ACA-9352-4A5F-821E-F4D6EBDCAB11}",
       "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\mainform.resx||{FF4D6ACA-9352-4A5F-821E-F4D6EBDCAB11}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|D:\\Image enc\\Image-encryption-\\imageencryptcompress\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|E:\\Desktop Folders\\Algo\\Image-encryption-Project\\imageencryptcompress\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7CA8077F-C27A-400D-B6C9-7737665499AC}|ImageEncryptCompress\\ImageEncryptCompress.csproj|solutionrelative:imageencryptcompress\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -34,15 +34,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 12,
           "Children": [
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{de1fc918-f32e-4dd7-a915-1792a051f26b}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
             },
             {
               "$type": "Bookmark",
@@ -54,24 +50,15 @@
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ImageOperations.cs",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\ImageOperations.cs",
-              "RelativeDocumentMoniker": "ImageEncryptCompress\\ImageOperations.cs",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\ImageOperations.cs*",
-              "RelativeToolTip": "ImageEncryptCompress\\ImageOperations.cs*",
-              "ViewState": "AQIAAIcCAAAAAAAAAAAowPICAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-09T17:17:54.243Z",
-              "EditorCaption": ""
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
             },
             {
               "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+              "Name": "ST:0:0:{de1fc918-f32e-4dd7-a915-1792a051f26b}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
             },
             {
               "$type": "Bookmark",
@@ -87,24 +74,37 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
+              "Title": "ImageOperations.cs",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\ImageOperations.cs",
+              "RelativeDocumentMoniker": "ImageEncryptCompress\\ImageOperations.cs",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\ImageOperations.cs",
+              "RelativeToolTip": "ImageEncryptCompress\\ImageOperations.cs",
+              "ViewState": "AQIAAKYAAAAAAAAAAAAAALQAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-09T17:17:54.243Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "MainForm.cs [Design]",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.cs",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.cs",
               "RelativeDocumentMoniker": "ImageEncryptCompress\\MainForm.cs",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.cs [Design]*",
-              "RelativeToolTip": "ImageEncryptCompress\\MainForm.cs [Design]*",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.cs [Design]",
+              "RelativeToolTip": "ImageEncryptCompress\\MainForm.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-09T17:17:49.514Z",
               "EditorCaption": " [Design]"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainForm.cs",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.cs",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.cs",
               "RelativeDocumentMoniker": "ImageEncryptCompress\\MainForm.cs",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.cs*",
-              "RelativeToolTip": "ImageEncryptCompress\\MainForm.cs*",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.cs",
+              "RelativeToolTip": "ImageEncryptCompress\\MainForm.cs",
               "ViewState": "AQIAABoAAAAAAAAAAAAswCkAAAALAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-09T17:23:39.22Z",
@@ -112,13 +112,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
               "Title": "MainForm.Designer.cs",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.Designer.cs",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.Designer.cs",
               "RelativeDocumentMoniker": "ImageEncryptCompress\\MainForm.Designer.cs",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.Designer.cs*",
-              "RelativeToolTip": "ImageEncryptCompress\\MainForm.Designer.cs*",
-              "ViewState": "AQIAAAsAAAAAAAAAAAAcwBkAAAAbAAAA",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.Designer.cs",
+              "RelativeToolTip": "ImageEncryptCompress\\MainForm.Designer.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABYAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-09T20:20:26.391Z",
               "EditorCaption": ""
@@ -127,10 +127,10 @@
               "$type": "Document",
               "DocumentIndex": 4,
               "Title": "MainForm.resx",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.resx",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.resx",
               "RelativeDocumentMoniker": "ImageEncryptCompress\\MainForm.resx",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\MainForm.resx*",
-              "RelativeToolTip": "ImageEncryptCompress\\MainForm.resx*",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\MainForm.resx",
+              "RelativeToolTip": "ImageEncryptCompress\\MainForm.resx",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001005|",
               "WhenOpened": "2024-05-09T20:20:25.337Z",
               "EditorCaption": ""
@@ -139,13 +139,43 @@
               "$type": "Document",
               "DocumentIndex": 5,
               "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\Program.cs",
+              "DocumentMoniker": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\Program.cs",
               "RelativeDocumentMoniker": "ImageEncryptCompress\\Program.cs",
-              "ToolTip": "D:\\Image enc\\Image-encryption-\\ImageEncryptCompress\\Program.cs",
+              "ToolTip": "E:\\Desktop Folders\\Algo\\Image-encryption-Project\\ImageEncryptCompress\\Program.cs",
               "RelativeToolTip": "ImageEncryptCompress\\Program.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-09T17:17:50.941Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 106,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e1b7d1f8-9b3c-49b1-8f4f-bfc63a88835d}"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 279,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{eefa5220-e298-11d0-8f78-00a0c9110057}"
             }
           ]
         }
