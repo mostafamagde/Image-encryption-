@@ -20,19 +20,33 @@ namespace ImageEncryptCompress
             InitializeComponent();
         }
 
-        RGBPixel[,] ImageMatrix;
+        RGBPixel[,] OriginalImageMatrix;
+        RGBPixel[,] ImageMatrixAfterOperation;
+        string path;
+        string pathWithoutFileName;
+        string fileExtension;
+        string fileNameWithoutExtension;
 
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
+                ImageMatrixAfterOperation = null;
+                OriginalImageMatrix = null;
+                ResetFormComponents();
                 //Open the browsed image and display it
-                string OpenedFilePath = openFileDialog1.FileName;
-                ImageMatrix = ImageOperations.OpenImage(OpenedFilePath);
-                ImageOperations.DisplayImage(ImageMatrix, pictureBox1);
-                txtWidth.Text = ImageOperations.GetWidth(ImageMatrix).ToString();
-                txtHeight.Text = ImageOperations.GetHeight(ImageMatrix).ToString();
+                path = openFileDialog.FileName;
+                fileNameWithoutExtension = Path.GetFileNameWithoutExtension(path);
+                pathWithoutFileName = Path.GetDirectoryName(path);
+                fileExtension = Path.GetExtension(path);
+                if (fileExtension == ".bmp")
+                {
+                    OriginalImageMatrix = ImageOperations.OpenImage(path);
+                    ImageOperations.DisplayImage(OriginalImageMatrix, pictureBox1);
+                    txtWidth.Text = ImageOperations.GetWidth(OriginalImageMatrix).ToString();
+                    txtHeight.Text = ImageOperations.GetHeight(OriginalImageMatrix).ToString();
+                }
             }
         }
 
@@ -45,36 +59,21 @@ namespace ImageEncryptCompress
         //}
 
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (ImageMatrix != null)
-            {
-                ImageMatrix = ImageOperations.Encrypt(ImageMatrix, Seed_Box.Text, (int)K_value.Value);
-                string path = File.ReadAllText("path.txt");
-                ImageOperations.CompressImage(ImageMatrix, path);
-                ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
-            }
-            else
-            {
-                MessageBox.Show("Open image, please.");
-            }
-        }
-
         private void SaveImageButton_Click(object sender, EventArgs e)
         {
-            if (ImageMatrix == null)
+            if (ImageMatrixAfterOperation == null)
             {
-                MessageBox.Show("Open image, please.");
+                MessageBox.Show("Make operation, please.");
                 return;
             }
-            int width = ImageOperations.GetWidth(ImageOperations.afterDecompression);
-            int height = ImageOperations.GetHeight(ImageOperations.afterDecompression);
-            Bitmap bitmap = new Bitmap(width, height);
+            int width = ImageOperations.GetWidth(ImageMatrixAfterOperation);
+            int height = ImageOperations.GetHeight(ImageMatrixAfterOperation);
+            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    RGBPixel pixel = ImageOperations.afterDecompression[y, x];
+                    RGBPixel pixel = ImageMatrixAfterOperation[y, x];
                     bitmap.SetPixel(x, y, Color.FromArgb(pixel.red, pixel.green, pixel.blue));
                 }
             }
@@ -96,6 +95,21 @@ namespace ImageEncryptCompress
             }
         }
 
+        private void EncryptDecryptButton_Click(object sender, EventArgs e)
+        {
+            if (!validateInputs())
+                return;
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
+            string path = File.ReadAllText("path.txt");
+            ImageOperations.CompressImage(ImageMatrixAfterOperation, path);
+            sw.Stop();
+            EncryptDecryptTime.Text = sw.Elapsed.ToString();
+            ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
+        }
+
         private void EncryptCompressButton_Click(object sender, EventArgs e)
         {
             if (!validateInputs())
@@ -103,27 +117,31 @@ namespace ImageEncryptCompress
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ImageMatrix = ImageOperations.Encrypt(ImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            string path = File.ReadAllText("path.txt");
-            ImageOperations.CompressImage(ImageMatrix, path);
+            ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
+            ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
             EncryptionCompressionTime.Text = sw.Elapsed.ToString();
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+            ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
         private void DecryptDecompressButton_Click(object sender, EventArgs e)
         {
-            if (!validateInputs())
+            if (!validateInputs(validateImage: false))
                 return;
+
+            if (fileExtension != ".bin")
+            {
+                MessageBox.Show("Enter .bin file!");
+                return;
+            }
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            string path = File.ReadAllText("path.txt");
-            ImageMatrix = ImageOperations.Decompress(path);
-            ImageMatrix = ImageOperations.Encrypt(ImageMatrix, Seed_Box.Text, (int)K_value.Value);
+            ImageMatrixAfterOperation = ImageOperations.Decompress($"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
+            ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, Seed_Box.Text, (int)K_value.Value);
             sw.Stop();
             DecryptionDecompressionTime.Text = sw.Elapsed.ToString();
-            ImageOperations.DisplayImage(ImageMatrix, pictureBox2);
+            ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
         private void Seed_Box_KeyPress(object sender, KeyPressEventArgs e)
@@ -134,12 +152,15 @@ namespace ImageEncryptCompress
             }
         }
 
-        private bool validateInputs()
+        private bool validateInputs(bool validateImage = true)
         {
-            if (ImageMatrix == null)
+            if (validateImage)
             {
-                MessageBox.Show("Open image, please.");
-                return false;
+                if (OriginalImageMatrix == null)
+                {
+                    MessageBox.Show("Open Image, Please.");
+                    return false;
+                }
             }
             if (Seed_Box.Text == string.Empty)
             {
@@ -159,9 +180,12 @@ namespace ImageEncryptCompress
             return true;
         }
 
-        private void label2_Click(object sender, EventArgs e)
+        private void K_value_ValueChanged(object sender, EventArgs e)
         {
-
+            if (Seed_Box.Text.Length <= K_value.Value)
+            {
+                K_value.Value = Seed_Box.Text.Length-1;
+            }
         }
     }
 }

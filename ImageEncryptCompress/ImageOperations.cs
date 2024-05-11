@@ -59,8 +59,6 @@ namespace ImageEncryptCompress
         /// <returns>2D array of colors</returns>
         /// 
 
-        public static RGBPixel[,] afterDecompression;
-
         public static void CompressImage(RGBPixel[,] image, string outputFilePath)
         {
             Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
@@ -68,30 +66,23 @@ namespace ImageEncryptCompress
             Dictionary<byte, int> frequenciesBlue = new Dictionary<byte, int>();
             foreach (var pixel in image)
             {
-
                 int value;
-
 
                 if (frequenciesRed.TryGetValue(pixel.red, out value))
                     frequenciesRed[pixel.red] = value + 1;
                 else
                     frequenciesRed[pixel.red] = 1;
 
-
                 if (frequenciesGreen.TryGetValue(pixel.green, out value))
                     frequenciesGreen[pixel.green] = value + 1;
                 else
                     frequenciesGreen[pixel.green] = 1;
 
-
                 if (frequenciesBlue.TryGetValue(pixel.blue, out value))
                     frequenciesBlue[pixel.blue] = value + 1;
                 else
                     frequenciesBlue[pixel.blue] = 1;
-
-
             }
-
 
             HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
             HuffmanNode rootGreen = BuildHuffmanTree(frequenciesGreen);
@@ -107,6 +98,7 @@ namespace ImageEncryptCompress
             int width = GetWidth(image);
             int height = GetHeight(image);
             int w = 0;
+
             foreach (var pixel in image)
             {
                 string code = huffmanCodesRed[pixel.red];
@@ -158,21 +150,23 @@ namespace ImageEncryptCompress
                         countBlue = 0;
                     }
                 }
-
                 w++;
             }
+
             if (currentRedByte != 0)
             {
                 encodedBytesRed.Add(currentRedByte);
                 currentRedByte = 0;
                 countRed = 0;
             }
+
             if (currentBlueByte != 0)
             {
                 encodedBytesBlue.Add(currentBlueByte);
                 currentBlueByte = 0;
                 countBlue = 0;
             }
+
             if (currentGreenByte != 0)
             {
                 encodedBytesGreen.Add(currentGreenByte);
@@ -197,9 +191,10 @@ namespace ImageEncryptCompress
 
                 output.Write(encodedBytesBlue.Count);
                 output.Write(encodedBytesBlue.ToArray());
+
+                file.Close();
+                MessageBox.Show("Image compression completed and .bin file is saved.");
             }
-            file.Close();
-            Console.WriteLine("Image compression completed.");
 
         }
 
@@ -218,7 +213,6 @@ namespace ImageEncryptCompress
                 rootBlue = (HuffmanNode)formatter.Deserialize(fileStream);
 
                 // Read height and width
-
                 height = reader.ReadInt32();
                 width = reader.ReadInt32();
                 int encodedBytesRedLength = reader.ReadInt32();
@@ -243,13 +237,9 @@ namespace ImageEncryptCompress
                 {
                     bool bit = ((b >> i) & 1) == 1;
 
-
-
                     if (current.Left == null && current.Right == null)
                     {
-
                         image[h, w].red = current.Value;
-
 
                         w++;
                         if (w == width)
@@ -259,7 +249,6 @@ namespace ImageEncryptCompress
                             if (h == height)
                                 break;
                         }
-
 
                         current = rootRed;
                     }
@@ -268,25 +257,21 @@ namespace ImageEncryptCompress
                     else
                         current = current.Left;
                 }
-
-
             }
+
             h = 0;
             w = 0;
             current = rootGreen;
+
             foreach (byte b in encodedBytesGreen)
             {
                 for (int i = 7; i >= 0; i--)
                 {
                     bool bit = ((b >> i) & 1) == 1;
 
-
-
                     if (current.Left == null && current.Right == null)
                     {
-
                         image[h, w].green = current.Value;
-
 
                         w++;
                         if (w == width)
@@ -295,9 +280,7 @@ namespace ImageEncryptCompress
                             h++;
                             if (h == height)
                                 break;
-
                         }
-
 
                         current = rootGreen;
                     }
@@ -305,27 +288,22 @@ namespace ImageEncryptCompress
                         current = current.Right;
                     else
                         current = current.Left;
-
                 }
-
             }
 
             h = 0;
             w = 0;
             current = rootBlue;
+
             foreach (byte b in encodedBytesBlue)
             {
                 for (int i = 7; i >= 0; i--)
                 {
                     bool bit = ((b >> i) & 1) == 1;
 
-
-
                     if (current.Left == null && current.Right == null)
                     {
-
                         image[h, w].blue = current.Value;
-
 
                         w++;
                         if (w == width)
@@ -335,7 +313,6 @@ namespace ImageEncryptCompress
                             if (h == height)
                                 break;
                         }
-
 
                         current = rootBlue;
                     }
@@ -344,8 +321,8 @@ namespace ImageEncryptCompress
                     else
                         current = current.Left;
                 }
-
             }
+
             return image;
         }
 
@@ -452,33 +429,32 @@ namespace ImageEncryptCompress
 
         }
 
-
-        public static RGBPixel[,] Encrypt(RGBPixel[,] Image, string init_seed, int tap_pos)
+        public static RGBPixel[,] Encrypt(RGBPixel[,] image, string init_seed, int tap_pos)
         {
-            seed x = new seed();
-            x.sed = init_seed;
+            RGBPixel[,] Image = new RGBPixel[GetHeight(image), GetWidth(image)];
+            Array.Copy(image, Image, image.Length);
             string[] seed_key = new string[2];
+            string initSeed = init_seed;
 
             for (int i = 0; i < GetHeight(Image); i++)
             {
                 for (int j = 0; j < GetWidth(Image); j++)
                 {
-                    seed_key = Generatekey(x.sed, tap_pos);
+                    seed_key = Generatekey(initSeed, tap_pos);
 
                     Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(seed_key[0], 2));
 
-
-                    x.sed = seed_key[1];
-                    seed_key = Generatekey(x.sed, tap_pos);
+                    initSeed = seed_key[1];
+                    seed_key = Generatekey(initSeed, tap_pos);
 
                     Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(seed_key[0], 2));
 
-                    x.sed = seed_key[1];
-                    seed_key = Generatekey(x.sed, tap_pos);
+                    initSeed = seed_key[1];
+                    seed_key = Generatekey(initSeed, tap_pos);
 
                     Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
 
-                    x.sed = seed_key[1];
+                    initSeed = seed_key[1];
 
                     //int blue_key = Generatekey(copy, tap_pos) ^ Image[i, j].blue;
                     //Image[i, j].blue = Convert.ToByte(blue_key);
@@ -493,8 +469,8 @@ namespace ImageEncryptCompress
 
             //CompressImage(Image, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
             return Image;
-
         }
+
         public static RGBPixel[,] OpenImage(string ImagePath)
         {
             Bitmap original_bm = new Bitmap(ImagePath);
@@ -553,12 +529,12 @@ namespace ImageEncryptCompress
             }
 
             //compress decompress save file
-            string path = File.ReadAllText("path.txt");
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            CompressImage(Buffer, path);
-            afterDecompression = Decompress(path);
-            sw.Stop();
+            //string path = File.ReadAllText("path.txt");
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
+            //CompressImage(Buffer, path);
+            //afterDecompression = Decompress(path);
+            //sw.Stop();
             return Buffer;
             //return Buffer;
         }
