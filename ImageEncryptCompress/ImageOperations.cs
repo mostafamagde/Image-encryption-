@@ -553,12 +553,12 @@ namespace ImageEncryptCompress
             }
 
             //compress decompress save file
-            string path = File.ReadAllText("path.txt");
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            CompressImage(Buffer, path);
-            afterDecompression = Decompress(path);
-            sw.Stop();
+            //string path = File.ReadAllText("path.txt");
+            //Stopwatch sw = new Stopwatch();
+            //sw.Start();
+            //CompressImage(Buffer, path);
+            //afterDecompression = Decompress(path);
+            //sw.Stop();
             return Buffer;
             //return Buffer;
         }
