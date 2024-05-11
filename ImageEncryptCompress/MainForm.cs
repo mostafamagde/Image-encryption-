@@ -184,6 +184,7 @@ namespace ImageEncryptCompress
         {
             if (Seed_Box.Text.Length <= K_value.Value)
             {
+                MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
                 K_value.Value = Seed_Box.Text.Length-1;
             }
         }
