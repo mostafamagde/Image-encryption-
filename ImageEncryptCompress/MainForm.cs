@@ -103,7 +103,7 @@ namespace ImageEncryptCompress
             Stopwatch sw = new Stopwatch();
             sw.Start();
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
+           // ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
             EncryptDecryptTime.Text = sw.Elapsed.ToString();
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
