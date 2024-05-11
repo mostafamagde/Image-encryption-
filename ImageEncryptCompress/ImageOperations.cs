@@ -23,10 +23,7 @@ namespace ImageEncryptCompress
     /// <summary>
     /// Holds the pixel color in 3 byte values: red, green and blue
     /// </summary>
-    public class seed
-    {
-        public string sed;
-    }
+   
     public struct RGBPixel
     {
         public byte red, green, blue;
@@ -429,10 +426,10 @@ namespace ImageEncryptCompress
 
         }
 
-        public static RGBPixel[,] Encrypt(RGBPixel[,] image, string init_seed, int tap_pos)
+        public static RGBPixel[,] Encrypt(RGBPixel[,] SourceImage, string init_seed, int tap_pos)
         {
-            RGBPixel[,] Image = new RGBPixel[GetHeight(image), GetWidth(image)];
-            Array.Copy(image, Image, image.Length);
+            RGBPixel[,] Image = new RGBPixel[GetHeight(SourceImage), GetWidth(SourceImage)];
+            Array.Copy(SourceImage, Image, SourceImage.Length);
             string[] seed_key = new string[2];
             string initSeed = init_seed;
 
