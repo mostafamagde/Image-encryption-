@@ -14,6 +14,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.IO.Compression;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -171,28 +172,31 @@ namespace ImageEncryptCompress
                 countGreen = 0;
             }
 
-            FileStream file = File.Open(outputFilePath, FileMode.Create);
-            using (BinaryWriter output = new BinaryWriter(file))
+            using (FileStream file = File.Open(outputFilePath, FileMode.Create))
             {
-                IFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(output.BaseStream, rootRed);
-                formatter.Serialize(output.BaseStream, rootGreen);
-                formatter.Serialize(output.BaseStream, rootBlue);
-                output.Write(GetHeight(image));
-                output.Write(GetWidth(image));
-                output.Write(encodedBytesRed.Count);
-                output.Write(encodedBytesRed.ToArray());
+                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Compress))
+                {
+                    using (BinaryWriter writer = new BinaryWriter(zipStream))
+                    {
+                        IFormatter formatter = new BinaryFormatter();
+                        formatter.Serialize(writer.BaseStream, rootRed);
+                        formatter.Serialize(writer.BaseStream, rootGreen);
+                        formatter.Serialize(writer.BaseStream, rootBlue);
+                        writer.Write(GetHeight(image));
+                        writer.Write(GetWidth(image));
+                        writer.Write(encodedBytesRed.Count);
+                        writer.Write(encodedBytesRed.ToArray());
 
-                output.Write(encodedBytesGreen.Count);
-                output.Write(encodedBytesGreen.ToArray());
+                        writer.Write(encodedBytesGreen.Count);
+                        writer.Write(encodedBytesGreen.ToArray());
 
-                output.Write(encodedBytesBlue.Count);
-                output.Write(encodedBytesBlue.ToArray());
-
-                file.Close();
-                MessageBox.Show("Image compression completed and .bin file is saved.");
+                        writer.Write(encodedBytesBlue.Count);
+                        writer.Write(encodedBytesBlue.ToArray());
+                    }
+                }
             }
 
+            MessageBox.Show("Image compression completed and .bin file is saved.");
         }
 
         public static RGBPixel[,] Decompress(string path)
@@ -200,27 +204,32 @@ namespace ImageEncryptCompress
             HuffmanNode rootRed, rootGreen, rootBlue;
             int width, height;
             byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
-            FileStream fileStream = File.Open(path, FileMode.Open);
-            using (BinaryReader reader = new BinaryReader(fileStream))
+
+            using (FileStream file = File.Open(path, FileMode.Open))
             {
-                // Deserialize Huffman tree
-                IFormatter formatter = new BinaryFormatter();
-                rootRed = (HuffmanNode)formatter.Deserialize(fileStream);
-                rootGreen = (HuffmanNode)formatter.Deserialize(fileStream);
-                rootBlue = (HuffmanNode)formatter.Deserialize(fileStream);
+                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Decompress))
+                {
+                    using (BinaryReader reader = new BinaryReader(zipStream))
+                    {
+                        // Deserialize Huffman tree
+                        IFormatter formatter = new BinaryFormatter();
+                        rootRed = (HuffmanNode)formatter.Deserialize(zipStream);
+                        rootGreen = (HuffmanNode)formatter.Deserialize(zipStream);
+                        rootBlue = (HuffmanNode)formatter.Deserialize(zipStream);
 
-                // Read height and width
-                height = reader.ReadInt32();
-                width = reader.ReadInt32();
-                int encodedBytesRedLength = reader.ReadInt32();
-                encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
+                        // Read height and width
+                        height = reader.ReadInt32();
+                        width = reader.ReadInt32();
+                        int encodedBytesRedLength = reader.ReadInt32();
+                        encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
 
-                int encodedBytesGreenLength = reader.ReadInt32();
-                encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
+                        int encodedBytesGreenLength = reader.ReadInt32();
+                        encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
 
-                int encodedBytesBlueLength = reader.ReadInt32();
-                encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
-
+                        int encodedBytesBlueLength = reader.ReadInt32();
+                        encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
+                    }
+                }
             }
 
             RGBPixel[,] image = new RGBPixel[height, width];
