@@ -22,6 +22,7 @@ namespace ImageEncryptCompress
 
         RGBPixel[,] OriginalImageMatrix;
         RGBPixel[,] ImageMatrixAfterOperation;
+        public static PixelFormat ImagePixelFormat;
         string path;
         string pathWithoutFileName;
         string fileExtension;
@@ -58,7 +59,6 @@ namespace ImageEncryptCompress
         //    ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
         //}
 
-
         private void SaveImageButton_Click(object sender, EventArgs e)
         {
             if (ImageMatrixAfterOperation == null)
@@ -66,32 +66,58 @@ namespace ImageEncryptCompress
                 MessageBox.Show("Make operation, please.");
                 return;
             }
+
             int width = ImageOperations.GetWidth(ImageMatrixAfterOperation);
             int height = ImageOperations.GetHeight(ImageMatrixAfterOperation);
-            Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    RGBPixel pixel = ImageMatrixAfterOperation[y, x];
-                    bitmap.SetPixel(x, y, Color.FromArgb(pixel.red, pixel.green, pixel.blue));
-                }
-            }
 
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
-            saveFileDialog.RestoreDirectory = true;
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            using (Bitmap bitmap = new Bitmap(width, height, ImagePixelFormat))
             {
-                if (File.Exists(saveFileDialog.FileName))
+                Rectangle rect = new Rectangle(0, 0, width, height);
+                BitmapData bmpData = bitmap.LockBits(rect, ImageLockMode.WriteOnly, bitmap.PixelFormat);
+
+                try
                 {
-                    MessageBox.Show("Enter a non existing file name.");
-                    SaveImageButton_Click(sender, e);
-                    return;
+                    unsafe
+                    {
+                        byte* ptr = (byte*)bmpData.Scan0;
+
+                        for (int y = 0; y < height; y++)
+                        {
+                            for (int x = 0; x < width; x++)
+                            {
+                                RGBPixel pixel = ImageMatrixAfterOperation[y, x];
+                                int bytesPerPixel = Image.GetPixelFormatSize(ImagePixelFormat) / 8;
+                                int index = y * bmpData.Stride + x * bytesPerPixel;
+                                ptr[index] = pixel.blue;
+                                if (bytesPerPixel >= 3)
+                                {
+                                    ptr[index + 1] = pixel.green;
+                                    ptr[index + 2] = pixel.red;
+                                }
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    bitmap.UnlockBits(bmpData);
                 }
 
-                bitmap.Save(saveFileDialog.FileName, ImageFormat.Bmp);
-                MessageBox.Show("Image saved successfully.");
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "bmp files (*.bmp)|*.bmp|All files (*.*)|*.*";
+                saveFileDialog.RestoreDirectory = true;
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (File.Exists(saveFileDialog.FileName))
+                    {
+                        MessageBox.Show("File already exists. Please enter a non-existing file name.");
+                        return;
+                    }
+
+                    bitmap.Save(saveFileDialog.FileName, ImageFormat.Bmp);
+                    MessageBox.Show("Image saved successfully.");
+                }
             }
         }
 
@@ -103,9 +129,9 @@ namespace ImageEncryptCompress
             Stopwatch sw = new Stopwatch();
             sw.Start();
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-           // ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
-            EncryptDecryptTime.Text = sw.Elapsed.ToString();
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
+            EncryptDecryptTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
@@ -119,7 +145,8 @@ namespace ImageEncryptCompress
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
             ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
-            EncryptionCompressionTime.Text = sw.Elapsed.ToString();
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
+            EncryptionCompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
@@ -139,7 +166,8 @@ namespace ImageEncryptCompress
             ImageMatrixAfterOperation = ImageOperations.Decompress($"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, Seed_Box.Text, (int)K_value.Value);
             sw.Stop();
-            DecryptionDecompressionTime.Text = sw.Elapsed.ToString();
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
+            DecryptionDecompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
@@ -187,5 +215,7 @@ namespace ImageEncryptCompress
                 K_value.Value = Seed_Box.Text.Length - 1;
             }
         }
+
+
     }
 }

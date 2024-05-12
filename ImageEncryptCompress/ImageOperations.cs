@@ -23,7 +23,7 @@ namespace ImageEncryptCompress
     /// <summary>
     /// Holds the pixel color in 3 byte values: red, green and blue
     /// </summary>
-   
+
     public struct RGBPixel
     {
         public byte red, green, blue;
@@ -484,19 +484,21 @@ namespace ImageEncryptCompress
                 bool Format32 = false;
                 bool Format24 = false;
                 bool Format8 = false;
-
                 if (original_bm.PixelFormat == PixelFormat.Format24bppRgb)
                 {
+                    MainForm.ImagePixelFormat = PixelFormat.Format24bppRgb;
                     Format24 = true;
                     nWidth = Width * 3;
                 }
                 else if (original_bm.PixelFormat == PixelFormat.Format32bppArgb || original_bm.PixelFormat == PixelFormat.Format32bppRgb || original_bm.PixelFormat == PixelFormat.Format32bppPArgb)
                 {
+                    MainForm.ImagePixelFormat = PixelFormat.Format32bppRgb;
                     Format32 = true;
                     nWidth = Width * 4;
                 }
                 else if (original_bm.PixelFormat == PixelFormat.Format8bppIndexed)
                 {
+                    MainForm.ImagePixelFormat = PixelFormat.Format8bppIndexed;
                     Format8 = true;
                     nWidth = Width;
                 }
