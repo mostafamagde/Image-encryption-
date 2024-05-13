@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Windows.Forms;
 
@@ -143,8 +145,14 @@ namespace ImageEncryptCompress
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            ImageOperations.CompressImage(OriginalImageMatrix, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
+
+            var (RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB) = ImageOperations.CompressImage(OriginalImageMatrix);
+
+            WriteBinaryFile(filePath, RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB);
+
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
             EncryptionCompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
@@ -163,8 +171,13 @@ namespace ImageEncryptCompress
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ImageMatrixAfterOperation = ImageOperations.Decompress($"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
-            ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, Seed_Box.Text, (int)K_value.Value);
+
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
+            var (RedR, GreenR, BlueR, height, width, TapP, InitS, RedEB, GreenEB, BlueEB) = ReadBinaryFile(filePath);
+
+            ImageMatrixAfterOperation = ImageOperations.Decompress(RedR, GreenR, BlueR, height, width, RedEB, GreenEB, BlueEB);
+            ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, InitS, TapP);
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
             DecryptionDecompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
@@ -220,6 +233,76 @@ namespace ImageEncryptCompress
             }
         }
 
+        private void WriteBinaryFile(string filePath, HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, List<byte> encodedBytesRed, List<byte> encodedBytesGreen, List<byte> encodedBytesBlue)
+        {
+            using (FileStream file = File.Open(filePath, FileMode.Create))
+            {
+                using (BinaryWriter writer = new BinaryWriter(file))
+                {
+                    IFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(writer.BaseStream, rootRed);
+                    formatter.Serialize(writer.BaseStream, rootGreen);
+                    formatter.Serialize(writer.BaseStream, rootBlue);
+
+                    writer.Write(ImageOperations.GetHeight(OriginalImageMatrix));
+                    writer.Write(ImageOperations.GetWidth(OriginalImageMatrix));
+
+                    writer.Write(Convert.ToInt32(K_value.Value));
+                    writer.Write(Seed_Box.Text);
+
+                    writer.Write(encodedBytesRed.Count);
+                    writer.Write(encodedBytesRed.ToArray());
+
+                    writer.Write(encodedBytesGreen.Count);
+                    writer.Write(encodedBytesGreen.ToArray());
+
+                    writer.Write(encodedBytesBlue.Count);
+                    writer.Write(encodedBytesBlue.ToArray());
+
+                    writer.Dispose();
+                    file.Dispose();
+                }
+            }
+        }
+
+        private (HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, int tab_position, string init_seed, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue) ReadBinaryFile(string filePath)
+        {
+
+            HuffmanNode rootRed, rootGreen, rootBlue;
+            int height, width, tab_position;
+            string init_seed;
+            byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
+
+            using (FileStream file = File.Open(path, FileMode.Open))
+            {
+                using (BinaryReader reader = new BinaryReader(file))
+                {
+                    IFormatter formatter = new BinaryFormatter();
+                    rootRed = (HuffmanNode)formatter.Deserialize(file);
+                    rootGreen = (HuffmanNode)formatter.Deserialize(file);
+                    rootBlue = (HuffmanNode)formatter.Deserialize(file);
+
+                    height = reader.ReadInt32();
+                    width = reader.ReadInt32();
+
+                    tab_position = reader.ReadInt32();
+                    init_seed = reader.ReadString();
+
+                    int encodedBytesRedLength = reader.ReadInt32();
+                    encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
+
+                    int encodedBytesGreenLength = reader.ReadInt32();
+                    encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
+
+                    int encodedBytesBlueLength = reader.ReadInt32();
+                    encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
+
+                    reader.Dispose();
+                    file.Dispose();
+                }
+            }
+            return (rootRed, rootGreen, rootBlue, height, width, tab_position, init_seed, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
+        }
 
     }
 }

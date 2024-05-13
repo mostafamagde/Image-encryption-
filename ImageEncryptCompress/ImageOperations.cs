@@ -7,14 +7,6 @@ using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.IO.Pipes;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
-using System.IO.Compression;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -57,7 +49,7 @@ namespace ImageEncryptCompress
         /// <returns>2D array of colors</returns>
         /// 
 
-        public static void CompressImage(RGBPixel[,] image, string outputFilePath)
+        public static (HuffmanNode RootRed, HuffmanNode RootGreen, HuffmanNode RootBlue, List<byte> EncodedBytesRed, List<byte> EncodedBytesGreen, List<byte> EncodedBytesBlue) CompressImage(RGBPixel[,] image)
         {
             Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
             Dictionary<byte, int> frequenciesGreen = new Dictionary<byte, int>();
@@ -172,60 +164,11 @@ namespace ImageEncryptCompress
                 countGreen = 0;
             }
 
-            using (FileStream file = File.Open(outputFilePath, FileMode.Create))
-            {
-                using (BinaryWriter writer = new BinaryWriter(file))
-                {
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(writer.BaseStream, rootRed);
-                    formatter.Serialize(writer.BaseStream, rootGreen);
-                    formatter.Serialize(writer.BaseStream, rootBlue);
-                    writer.Write(GetHeight(image));
-                    writer.Write(GetWidth(image));
-                    writer.Write(encodedBytesRed.Count);
-                    writer.Write(encodedBytesRed.ToArray());
-
-                    writer.Write(encodedBytesGreen.Count);
-                    writer.Write(encodedBytesGreen.ToArray());
-
-                    writer.Write(encodedBytesBlue.Count);
-                    writer.Write(encodedBytesBlue.ToArray());
-                }
-            }
-
-            MessageBox.Show("Image compression completed and .bin file is saved.");
+            return (rootRed, rootGreen, rootBlue, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
         }
 
-        public static RGBPixel[,] Decompress(string path)
+        public static RGBPixel[,] Decompress(HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue)
         {
-            HuffmanNode rootRed, rootGreen, rootBlue;
-            int width, height;
-            byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
-
-            using (FileStream file = File.Open(path, FileMode.Open))
-            {
-                using (BinaryReader reader = new BinaryReader(file))
-                {
-                    // Deserialize Huffman tree
-                    IFormatter formatter = new BinaryFormatter();
-                    rootRed = (HuffmanNode)formatter.Deserialize(file);
-                    rootGreen = (HuffmanNode)formatter.Deserialize(file);
-                    rootBlue = (HuffmanNode)formatter.Deserialize(file);
-
-                    // Read height and width
-                    height = reader.ReadInt32();
-                    width = reader.ReadInt32();
-                    int encodedBytesRedLength = reader.ReadInt32();
-                    encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
-
-                    int encodedBytesGreenLength = reader.ReadInt32();
-                    encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
-
-                    int encodedBytesBlueLength = reader.ReadInt32();
-                    encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
-                }
-            }
-
             RGBPixel[,] image = new RGBPixel[height, width];
             //Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
             // Decode Huffman-encoded bits and reconstruct image pixels
@@ -262,7 +205,6 @@ namespace ImageEncryptCompress
             h = 0;
             w = 0;
             current = rootGreen;
-
             foreach (byte b in encodedBytesGreen)
             {
                 for (int i = 7; i >= 0; i--)
@@ -294,7 +236,6 @@ namespace ImageEncryptCompress
             h = 0;
             w = 0;
             current = rootBlue;
-
             foreach (byte b in encodedBytesBlue)
             {
                 for (int i = 7; i >= 0; i--)
@@ -405,22 +346,17 @@ namespace ImageEncryptCompress
 
         public static string[] Generatekey(string init_sead, int tap_position)
         {
-
             string Initial_seed = string.Copy(init_sead);
-
             string compelet_key = null;
 
             for (int i = 0; i < 8; i++)
             {
-
-
                 char leftBit = Initial_seed[0];
                 char tapBit = Initial_seed[Initial_seed.Length - tap_position - 1];
                 string key = Convert.ToString(leftBit ^ tapBit);
 
                 Initial_seed = Initial_seed.Substring(1) + key;
                 compelet_key = compelet_key + key;
-
             }
             string[] final = new string[2];
             final[0] = compelet_key;
@@ -441,30 +377,17 @@ namespace ImageEncryptCompress
                 for (int j = 0; j < GetWidth(Image); j++)
                 {
                     seed_key = Generatekey(initSeed, tap_pos);
-
                     Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
-                    seed_key = Generatekey(initSeed, tap_pos);
 
+                    seed_key = Generatekey(initSeed, tap_pos);
                     Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
+
                     seed_key = Generatekey(initSeed, tap_pos);
-
                     Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
-
-                    //int blue_key = Generatekey(copy, tap_pos) ^ Image[i, j].blue;
-                    //Image[i, j].blue = Convert.ToByte(blue_key);
-
-                    //int green_key = Generatekey(copy, tap_pos) ^ Image[i, j].green;
-                    //Image[i, j].green = Convert.ToByte(green_key);
-
                 }
-
-
             }
 
             //CompressImage(Image, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
