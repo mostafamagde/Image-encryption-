@@ -48,6 +48,7 @@ namespace ImageEncryptCompress
                     txtWidth.Text = ImageOperations.GetWidth(OriginalImageMatrix).ToString();
                     txtHeight.Text = ImageOperations.GetHeight(OriginalImageMatrix).ToString();
                 }
+                MessageBox.Show("File opened successfully.");
             }
         }
 
@@ -59,7 +60,7 @@ namespace ImageEncryptCompress
         //    ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
         //}
 
-        private void SaveImageButton_Click(object sender, EventArgs e)
+        private void SaveFileButton_Click(object sender, EventArgs e)
         {
             if (ImageMatrixAfterOperation == null)
             {
@@ -143,7 +144,7 @@ namespace ImageEncryptCompress
             Stopwatch sw = new Stopwatch();
             sw.Start();
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
+            ImageOperations.CompressImage(OriginalImageMatrix, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
             EncryptionCompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
@@ -152,14 +153,13 @@ namespace ImageEncryptCompress
 
         private void DecryptDecompressButton_Click(object sender, EventArgs e)
         {
-            if (!validateInputs(validateImage: false))
-                return;
-
             if (fileExtension != ".bin")
             {
                 MessageBox.Show("Enter .bin file!");
                 return;
             }
+
+            MessageBox.Show("Entered biniary initial seed and tap position will be ignored!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -211,8 +211,12 @@ namespace ImageEncryptCompress
         {
             if (Seed_Box.Text.Length <= K_value.Value)
             {
-                MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
-                K_value.Value = Seed_Box.Text.Length - 1;
+                MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                try
+                {
+                    K_value.Value = Seed_Box.Text.Length - 1;
+                }
+                catch { K_value.Value = 0; }
             }
         }
 

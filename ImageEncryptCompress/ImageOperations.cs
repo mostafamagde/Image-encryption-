@@ -174,25 +174,22 @@ namespace ImageEncryptCompress
 
             using (FileStream file = File.Open(outputFilePath, FileMode.Create))
             {
-                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Compress))
+                using (BinaryWriter writer = new BinaryWriter(file))
                 {
-                    using (BinaryWriter writer = new BinaryWriter(zipStream))
-                    {
-                        IFormatter formatter = new BinaryFormatter();
-                        formatter.Serialize(writer.BaseStream, rootRed);
-                        formatter.Serialize(writer.BaseStream, rootGreen);
-                        formatter.Serialize(writer.BaseStream, rootBlue);
-                        writer.Write(GetHeight(image));
-                        writer.Write(GetWidth(image));
-                        writer.Write(encodedBytesRed.Count);
-                        writer.Write(encodedBytesRed.ToArray());
+                    IFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(writer.BaseStream, rootRed);
+                    formatter.Serialize(writer.BaseStream, rootGreen);
+                    formatter.Serialize(writer.BaseStream, rootBlue);
+                    writer.Write(GetHeight(image));
+                    writer.Write(GetWidth(image));
+                    writer.Write(encodedBytesRed.Count);
+                    writer.Write(encodedBytesRed.ToArray());
 
-                        writer.Write(encodedBytesGreen.Count);
-                        writer.Write(encodedBytesGreen.ToArray());
+                    writer.Write(encodedBytesGreen.Count);
+                    writer.Write(encodedBytesGreen.ToArray());
 
-                        writer.Write(encodedBytesBlue.Count);
-                        writer.Write(encodedBytesBlue.ToArray());
-                    }
+                    writer.Write(encodedBytesBlue.Count);
+                    writer.Write(encodedBytesBlue.ToArray());
                 }
             }
 
@@ -207,28 +204,25 @@ namespace ImageEncryptCompress
 
             using (FileStream file = File.Open(path, FileMode.Open))
             {
-                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Decompress))
+                using (BinaryReader reader = new BinaryReader(file))
                 {
-                    using (BinaryReader reader = new BinaryReader(zipStream))
-                    {
-                        // Deserialize Huffman tree
-                        IFormatter formatter = new BinaryFormatter();
-                        rootRed = (HuffmanNode)formatter.Deserialize(zipStream);
-                        rootGreen = (HuffmanNode)formatter.Deserialize(zipStream);
-                        rootBlue = (HuffmanNode)formatter.Deserialize(zipStream);
+                    // Deserialize Huffman tree
+                    IFormatter formatter = new BinaryFormatter();
+                    rootRed = (HuffmanNode)formatter.Deserialize(file);
+                    rootGreen = (HuffmanNode)formatter.Deserialize(file);
+                    rootBlue = (HuffmanNode)formatter.Deserialize(file);
 
-                        // Read height and width
-                        height = reader.ReadInt32();
-                        width = reader.ReadInt32();
-                        int encodedBytesRedLength = reader.ReadInt32();
-                        encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
+                    // Read height and width
+                    height = reader.ReadInt32();
+                    width = reader.ReadInt32();
+                    int encodedBytesRedLength = reader.ReadInt32();
+                    encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
 
-                        int encodedBytesGreenLength = reader.ReadInt32();
-                        encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
+                    int encodedBytesGreenLength = reader.ReadInt32();
+                    encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
 
-                        int encodedBytesBlueLength = reader.ReadInt32();
-                        encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
-                    }
+                    int encodedBytesBlueLength = reader.ReadInt32();
+                    encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
                 }
             }
 
