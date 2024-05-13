@@ -149,9 +149,11 @@ namespace ImageEncryptCompress
 
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
 
-            var (RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB) = ImageOperations.CompressImage(OriginalImageMatrix);
+            var (RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB) = ImageOperations.CompressImage(ImageMatrixAfterOperation);
 
             WriteBinaryFile(filePath, RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB);
+
+            MessageBox.Show("Image compression completed and .bin file is saved.");
 
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
@@ -273,7 +275,7 @@ namespace ImageEncryptCompress
             string init_seed;
             byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
 
-            using (FileStream file = File.Open(path, FileMode.Open))
+            using (FileStream file = File.Open(filePath, FileMode.Open))
             {
                 using (BinaryReader reader = new BinaryReader(file))
                 {
