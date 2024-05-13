@@ -160,47 +160,60 @@ namespace ImageEncryptCompress
                
                     using (BinaryWriter writer = new BinaryWriter(file))
                     {
-                        IFormatter formatter = new BinaryFormatter();
-                        formatter.Serialize(writer.BaseStream, rootRed);
-                        formatter.Serialize(writer.BaseStream, rootGreen);
-                        formatter.Serialize(writer.BaseStream, rootBlue);
-                        writer.Write(GetHeight(image));
-                        writer.Write(GetWidth(image));
-                        writer.Write(encodedBytes.Count);
-                        writer.Write(encodedBytes.ToArray());
-                    }
+                    SaveHuffmanTree(writer, rootRed);
+                    SaveHuffmanTree(writer, rootGreen);
+                    SaveHuffmanTree(writer, rootBlue);
+                  /*  IFormatter formatter = new BinaryFormatter();
+                    formatter.Serialize(writer.BaseStream, rootRed);
+                    formatter.Serialize(writer.BaseStream, rootGreen);
+                    formatter.Serialize(writer.BaseStream, rootBlue);*/
+                    // Write additional data (optional)
+                    writer.Write(height);
+                    writer.Write(width);
+                    writer.Write(encodedBytes.Count);
+                    writer.Write(encodedBytes.ToArray());
+                }
                 
             }
 
             MessageBox.Show("Image compression completed and .bin file is saved.");
+            Console.WriteLine("{0}   {1}      {2}", rootRed.Value, rootRed.Left.Value, rootRed.Right.Value);
+           // Decompress("D://Downloads//OneDrive_2024-04-26//Complete Test//Complete Test//Large//Large.Case1.bin");
         }
 
         public static RGBPixel[,] Decompress(string path)
         {
+            Console.WriteLine("in decompress");
             HuffmanNode rootRed, rootGreen, rootBlue;
             int width, height;
-            byte[] encodedBytes, encodedBytesGreen, encodedBytesBlue;
+            byte[] encodedBytes;
 
             using (FileStream file = File.Open(path, FileMode.Open))
             {
               
                     using (BinaryReader reader = new BinaryReader(file))
                     {
-                        // Deserialize Huffman tree
+                 /*       // Deserialize Huffman tree
                         IFormatter formatter = new BinaryFormatter();
-                        rootRed = (HuffmanNode)formatter.Deserialize(file);
-                        rootGreen = (HuffmanNode)formatter.Deserialize(file);
-                        rootBlue = (HuffmanNode)formatter.Deserialize(file);
+                    rootRed = (HuffmanNode)formatter.Deserialize(file);
+                    Console.WriteLine("read red");
+                    rootGreen = (HuffmanNode)formatter.Deserialize(file);
+                        rootBlue = (HuffmanNode)formatter.Deserialize(file);*/
 
-                        // Read height and width
-                        height = reader.ReadInt32();
-                        width = reader.ReadInt32();
-                        int encodedBytesLength = reader.ReadInt32();
-                        encodedBytes = reader.ReadBytes(encodedBytesLength);
-                    }
-                
+
+
+                    rootRed = ReadHuffmanTree(reader);
+                    rootGreen = ReadHuffmanTree(reader);
+                    rootBlue = ReadHuffmanTree(reader);
+                    // Read additional data (optional)
+                    height = reader.ReadInt32();
+                     width = reader.ReadInt32();
+                    int  encodedBytesLength = reader.ReadInt32();
+                   encodedBytes = reader.ReadBytes(encodedBytesLength);
+                }
+
             }
-
+            Console.WriteLine("{0}     {1}",encodedBytes.Length, width);
             RGBPixel[,] image = new RGBPixel[height, width];
             //Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
             // Decode Huffman-encoded bits and reconstruct image pixels
@@ -264,6 +277,59 @@ namespace ImageEncryptCompress
             return image;
         }
 
+        public static HuffmanNode ReadHuffmanTree(BinaryReader reader)
+        {
+            byte marker = reader.ReadByte();
+            if (marker == (sbyte)-1)
+            {
+                return null;  // Empty node
+            }
+
+            HuffmanNode node = new HuffmanNode();
+
+            // Read presence flag for value
+            if (reader.ReadByte() == 1)
+            {
+                node.Value = reader.ReadByte();
+            }
+
+            // Read presence flags for left and right children
+            if (reader.ReadByte() == 1)
+            {
+                node.Left = ReadHuffmanTree(reader);
+            }
+
+            if (reader.ReadByte() == 1)
+            {
+                node.Right = ReadHuffmanTree(reader);
+            }
+
+            return node;
+        }
+        public static void SaveHuffmanTree(BinaryWriter writer, HuffmanNode root)
+        {
+            if (root == null)
+            {
+                writer.Write((sbyte)-1);
+                return;
+            }
+
+            // Write a flag to indicate presence/absence of value (0 for no value, 1 for value)
+            writer.Write((byte)(root.Value != 0 ? 1 : 0));
+
+            if (root.Value != 0)  // Write value if it exists
+            {
+                writer.Write(root.Value);
+            }
+
+            // Write presence/absence flags for left and right children (similar to value)
+            writer.Write((byte)(root.Left != null ? 1 : 0));
+            writer.Write((byte)(root.Right != null ? 1 : 0));
+
+            // Recursively save left and right children if they exist
+            SaveHuffmanTree(writer, root.Left);
+            SaveHuffmanTree(writer, root.Right);
+        }
         public static Dictionary<string, byte> ReBuildHuffmanCodes(HuffmanNode root)
         {
             Dictionary<string, byte> codes = new Dictionary<string, byte>();
@@ -475,7 +541,7 @@ namespace ImageEncryptCompress
            /* CompressImage(Buffer, "D://study//algo/.bin");*/
             //afterDecompression = Decompress(path);
             //sw.Stop();
-           // return Decompress("D://study//algo/.bin");
+          
             return Buffer;
         }
 
