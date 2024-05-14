@@ -6,9 +6,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace ImageEncryptCompress
@@ -186,14 +188,6 @@ namespace ImageEncryptCompress
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
-        private void Seed_Box_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!(e.KeyChar == '1') && !(e.KeyChar == '0') && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true;
-            }
-        }
-
         private bool validateInputs(bool validateImage = true)
         {
             if (validateImage)
@@ -214,12 +208,31 @@ namespace ImageEncryptCompress
                 MessageBox.Show("Enter Tap Position.");
                 return false;
             }
+
+            Seed_Box.Text = Seed_Box.Text.Trim();
+            foreach (char item in Seed_Box.Text.Distinct().ToArray())
+            {
+                if (item != '0' && item != '1')
+                {
+                    MessageBox.Show("Enter Valid Initial Seed.");
+                    return false;
+                }
+            }
+
             if (Seed_Box.Text.Length <= K_value.Value)
             {
                 MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
                 return false;
             }
             return true;
+        }
+
+        private void Seed_Box_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!(e.KeyChar == '1') && !(e.KeyChar == '0') && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
         }
 
         private void K_value_ValueChanged(object sender, EventArgs e)
