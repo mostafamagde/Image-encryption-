@@ -43,8 +43,6 @@ namespace ImageEncryptCompress
 
             writer.Write(true);
             writer.Write(node.Value);
-            writer.Write(node.Frequency);
-
             WriteTree(writer, node.Left);
             WriteTree(writer, node.Right);
         }
@@ -58,8 +56,8 @@ namespace ImageEncryptCompress
             }
 
             byte value = reader.ReadByte();
-            int frequency = reader.ReadInt32();
-            HuffmanNode node = new HuffmanNode { Value = value, Frequency = frequency };
+    
+            HuffmanNode node = new HuffmanNode { Value = value };
 
             node.Left = ReadTree(reader);
             node.Right = ReadTree(reader);
