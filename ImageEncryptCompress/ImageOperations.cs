@@ -32,7 +32,6 @@ namespace ImageEncryptCompress
         public int Frequency;
         public HuffmanNode Left;
         public HuffmanNode Right;
-        public short Identifier;
 
         public static void WriteTree(BinaryWriter writer, HuffmanNode node)
         {
@@ -67,7 +66,6 @@ namespace ImageEncryptCompress
 
             return node;
         }
-
     }
 
 
@@ -318,12 +316,13 @@ namespace ImageEncryptCompress
 
         public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
         {
-            short identifierCounter = 0;
+
+            int identifierCounter = 0;
             var priorityQueue = new SortedDictionary<(int Frequency, int Identifier), HuffmanNode>();
 
             foreach (var kvp in frequencies)
             {
-                priorityQueue.Add((kvp.Value, identifierCounter), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter });
+                priorityQueue.Add((kvp.Value, identifierCounter), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value });
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
@@ -339,10 +338,9 @@ namespace ImageEncryptCompress
                     Right = firstPair.Value,
                     Left = secondPair.Value,
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
-                    Identifier = identifierCounter
                 };
 
-                priorityQueue.Add((merged.Frequency, merged.Identifier), merged);
+                priorityQueue.Add((merged.Frequency,identifierCounter ), merged);
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
