@@ -112,10 +112,10 @@ namespace ImageEncryptCompress
             int countRed = 0, countGreen = 0, countBlue = 0;
             byte currentRedByte = 0, currentGreenByte = 0, currentBlueByte = 0;
             int w = 0;
-
             foreach (var pixel in image)
             {
                 string code = huffmanCodesRed[pixel.red];
+                
                 foreach (char bit in code)
                 {
                     if (bit == '1')
@@ -131,6 +131,8 @@ namespace ImageEncryptCompress
                     }
 
                 }
+              
+                
                 code = huffmanCodesGreen[pixel.green];
                 foreach (char bit in code)
                 {
@@ -167,25 +169,22 @@ namespace ImageEncryptCompress
                 w++;
             }
 
-            if (currentRedByte != 0)
+            if (countRed > 0)
                 encodedBytesRed.Add(currentRedByte);
-
-            if (currentBlueByte != 0)
-                encodedBytesBlue.Add(currentBlueByte);
-
-            if (currentGreenByte != 0)
+            if (countGreen > 0)
                 encodedBytesGreen.Add(currentGreenByte);
-
+            if (countBlue > 0)
+                encodedBytesBlue.Add(currentBlueByte);
+          
             return (rootRed, rootGreen, rootBlue, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
         }
 
         public static RGBPixel[,] Decompress(HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue)
         {
             RGBPixel[,] image = new RGBPixel[height, width];
-            //Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
-            // Decode Huffman-encoded bits and reconstruct image pixels
             int h = 0, w = 0;
             HuffmanNode current = rootRed;
+            
             foreach (byte b in encodedBytesRed)
             {
                 for (int i = 7; i >= 0; i--)
@@ -195,16 +194,18 @@ namespace ImageEncryptCompress
                     if (current.Left == null && current.Right == null)
                     {
                         image[h, w].red = current.Value;
-
                         w++;
                         if (w == width)
                         {
                             w = 0;
                             h++;
                             if (h == height)
+                            {
+                               
                                 break;
+                            }
+                            
                         }
-
                         current = rootRed;
                     }
                     if (bit)
@@ -212,8 +213,29 @@ namespace ImageEncryptCompress
                     else
                         current = current.Left;
                 }
+              
             }
 
+            byte bb = encodedBytesRed[encodedBytesRed.Length-1];
+            for (int i = 7; i >= 0; i--)
+            {
+                bool bit = ((bb >> i) & 1) == 1;
+
+                if (current.Left == null && current.Right == null)
+                {
+                    image[height - 1, width - 1].red = current.Value;
+                
+                    current = rootRed;
+                    break;
+                }
+                if (bit)
+                    current = current.Right;
+                else
+                    current = current.Left;
+            }
+ 
+            
+       
             h = 0;
             w = 0;
             current = rootGreen;
@@ -244,6 +266,25 @@ namespace ImageEncryptCompress
                         current = current.Left;
                 }
             }
+            for (int i = 7; i >= 0; i--)
+            {
+                bool bit = ((bb >> i) & 1) == 1;
+
+                if (current.Left == null && current.Right == null)
+                {
+                    image[height - 1, width - 1].green = current.Value;
+
+                    current = rootRed;
+                    break;
+                }
+                if (bit)
+                    current = current.Right;
+                else
+                    current = current.Left;
+            }
+    
+
+       
 
             h = 0;
             w = 0;
@@ -275,6 +316,24 @@ namespace ImageEncryptCompress
                         current = current.Left;
                 }
             }
+            for (int i = 7; i >= 0; i--)
+            {
+                bool bit = ((bb >> i) & 1) == 1;
+
+                if (current.Left == null && current.Right == null)
+                {
+                    image[height - 1, width - 1].blue = current.Value;
+
+                    current = rootRed;
+                    break;
+                }
+                if (bit)
+                    current = current.Right;
+                else
+                    current = current.Left;
+            }
+        
+         
 
             return image;
         }
@@ -296,11 +355,12 @@ namespace ImageEncryptCompress
 
             while (priorityQueue.Count > 1)
             {
-                var secondPair = priorityQueue.First();
-                priorityQueue.Remove(secondPair.Key);
+              
                 var firstPair = priorityQueue.First();
                 priorityQueue.Remove(firstPair.Key);
-               
+                var secondPair = priorityQueue.First();
+                priorityQueue.Remove(secondPair.Key);
+
 
                 var merged = new HuffmanNode
                 {
