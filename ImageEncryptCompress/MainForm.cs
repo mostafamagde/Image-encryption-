@@ -188,6 +188,51 @@ namespace ImageEncryptCompress
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
         }
 
+        private void CompressButton_Click(object sender, EventArgs e)
+        {
+            if (!validateInputs())
+                return;
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
+            var (RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB) = ImageOperations.CompressImage(OriginalImageMatrix);
+
+            WriteBinaryFile(filePath, RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB);
+
+            MessageBox.Show("Image compression completed and .bin file is saved.");
+            sw.Stop();
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
+            CompressTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
+        }
+
+        private void DecompressButton_Click(object sender, EventArgs e)
+        {
+            if (fileExtension != ".bin")
+            {
+                MessageBox.Show("Enter .bin file!");
+                return;
+            }
+
+            MessageBox.Show("Entered biniary initial seed and tap position will be ignored!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
+            var (RedR, GreenR, BlueR, height, width, _, _, RedEB, GreenEB, BlueEB) = ReadBinaryFile(filePath);
+
+            ImageMatrixAfterOperation = ImageOperations.Decompress(RedR, GreenR, BlueR, height, width, RedEB, GreenEB, BlueEB);
+
+            sw.Stop();
+            TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
+            DecompressTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
+            ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
+        }
+
         private bool validateInputs(bool validateImage = true)
         {
             if (validateImage)
@@ -254,10 +299,6 @@ namespace ImageEncryptCompress
             {
                 using (BinaryWriter writer = new BinaryWriter(file))
                 {
-                    //IFormatter formatter = new BinaryFormatter();
-                    //formatter.Serialize(writer.BaseStream, rootRed);
-                    //formatter.Serialize(writer.BaseStream, rootGreen);
-                    //formatter.Serialize(writer.BaseStream, rootBlue);
                     HuffmanNode.WriteTree(writer, rootRed);
                     HuffmanNode.WriteTree(writer, rootGreen);
                     HuffmanNode.WriteTree(writer, rootBlue);
@@ -283,8 +324,6 @@ namespace ImageEncryptCompress
             }
         }
 
-
-
         private (HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, int tab_position, string init_seed, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue) ReadBinaryFile(string filePath)
         {
 
@@ -297,11 +336,6 @@ namespace ImageEncryptCompress
             {
                 using (BinaryReader reader = new BinaryReader(file))
                 {
-                    //IFormatter formatter = new BinaryFormatter();
-                    //rootRed = (HuffmanNode)formatter.Deserialize(file);
-                    //rootGreen = (HuffmanNode)formatter.Deserialize(file);
-                    //rootBlue = (HuffmanNode)formatter.Deserialize(file);
-
                     rootRed = HuffmanNode.ReadTree(reader);
                     rootGreen = HuffmanNode.ReadTree(reader);
                     rootBlue = HuffmanNode.ReadTree(reader);
