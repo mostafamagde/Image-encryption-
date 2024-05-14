@@ -36,7 +36,7 @@ namespace ImageEncryptCompress
         public int Frequency;
         public HuffmanNode Left;
         public HuffmanNode Right;
-        public string Identifier;
+
     }
 
     public struct RGBPixelD
@@ -361,7 +361,7 @@ namespace ImageEncryptCompress
 
             foreach (var kvp in frequencies)
             {
-                priorityQueue.Add((kvp.Value, identifierCounter.ToString()), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter.ToString() });
+                priorityQueue.Add((kvp.Value, identifierCounter.ToString()), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value });
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
@@ -377,10 +377,9 @@ namespace ImageEncryptCompress
                     Right = firstPair.Value,
                     Left = secondPair.Value,
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
-                    Identifier = identifierCounter.ToString()
                 };
 
-                priorityQueue.Add((merged.Frequency, merged.Identifier), merged);
+                priorityQueue.Add((merged.Frequency,identifierCounter.ToString() ), merged);
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
