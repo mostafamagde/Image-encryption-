@@ -296,10 +296,11 @@ namespace ImageEncryptCompress
 
             while (priorityQueue.Count > 1)
             {
-                var firstPair = priorityQueue.First();
-                priorityQueue.Remove(firstPair.Key);
                 var secondPair = priorityQueue.First();
                 priorityQueue.Remove(secondPair.Key);
+                var firstPair = priorityQueue.First();
+                priorityQueue.Remove(firstPair.Key);
+               
 
                 var merged = new HuffmanNode
                 {
@@ -363,7 +364,6 @@ namespace ImageEncryptCompress
             string compelet = new string(compelet_key);
             string init = new string(Initial_seed);
             final[0] = compelet;
-
             final[1] = init;
             return final;
 
@@ -375,21 +375,22 @@ namespace ImageEncryptCompress
             Array.Copy(SourceImage, Image, SourceImage.Length);
             string[] seed_key = new string[2];
             string initSeed = init_seed;
-
-            for (int i = 0; i < GetHeight(Image); i++)
+            int height = GetHeight(Image);
+            int width = GetWidth(Image);
+            for (int i = 0; i <height ; i++)
             {
-                for (int j = 0; j < GetWidth(Image); j++)
+                for (int j = 0; j < width; j++)
                 {
                     seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(seed_key[0], 2));
+                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToByte(seed_key[0], 2));
                     initSeed = seed_key[1];
 
                     seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(seed_key[0], 2));
+                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToByte(seed_key[0], 2));
                     initSeed = seed_key[1];
 
                     seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
+                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToByte(seed_key[0], 2));
                     initSeed = seed_key[1];
                 }
             }
