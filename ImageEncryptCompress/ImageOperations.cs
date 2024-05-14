@@ -56,7 +56,7 @@ namespace ImageEncryptCompress
             }
 
             byte value = reader.ReadByte();
-    
+
             HuffmanNode node = new HuffmanNode { Value = value };
 
             node.Left = ReadTree(reader);
@@ -100,12 +100,12 @@ namespace ImageEncryptCompress
             HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
             HuffmanNode rootGreen = BuildHuffmanTree(frequenciesGreen);
             HuffmanNode rootBlue = BuildHuffmanTree(frequenciesBlue);
-            string[] huffmanCodesRed=new string[256];
+            string[] huffmanCodesRed = new string[256];
             string[] huffmanCodesGreen = new string[256];
             string[] huffmanCodesBlue = new string[256];
-            BuildHuffmanCodes(rootRed,"",huffmanCodesRed);
-            BuildHuffmanCodes(rootGreen,"",huffmanCodesGreen);
-            BuildHuffmanCodes(rootBlue,"",huffmanCodesBlue);
+            BuildHuffmanCodes(rootRed, "", huffmanCodesRed);
+            BuildHuffmanCodes(rootGreen, "", huffmanCodesGreen);
+            BuildHuffmanCodes(rootBlue, "", huffmanCodesBlue);
             List<byte> encodedBytesRed = new List<byte>();
             List<byte> encodedBytesGreen = new List<byte>();
             List<byte> encodedBytesBlue = new List<byte>();
@@ -344,7 +344,7 @@ namespace ImageEncryptCompress
             int identifierCounter = 0;
             var priorityQueue = new SortedDictionary<(int Frequency, int Identifier), HuffmanNode>();
 
-           for (int i = 0;i<256;i++)
+            for (int i = 0; i < 256; i++)
             {
                 if (frequencies[i] != 0)
                 {
@@ -383,7 +383,7 @@ namespace ImageEncryptCompress
 
             if (node.Left == null && node.Right == null)
             {
-                codes[node.Value]=code;
+                codes[node.Value] = code;
                 return;
             }
 
@@ -391,41 +391,36 @@ namespace ImageEncryptCompress
             BuildHuffmanCodes(node.Right, code + "1", codes);
         }
 
-        public static string[] Generatekey(string init_sead, int tap_position)
+        public static (string CompleteKey, string InitSeed) Generatekey(string init_sead, int tap_position)
         {
-            char[] Initial_seed = string.Copy(init_sead).ToArray();
+            char[] Initial_seed = init_sead.ToArray();
             char[] compelet_key = new char[8];
             int n = Initial_seed.Length;
+
             for (int i = 0; i < 8; i++)
             {
-                bool leftBit = Initial_seed[0]-'0'==1;
-                bool tapBit = Initial_seed[Initial_seed.Length - tap_position - 1]-'0'==1;
-
+                bool leftBit = Initial_seed[0] - '0' == 1;
+                bool tapBit = Initial_seed[Initial_seed.Length - tap_position - 1] - '0' == 1;
                 bool key = leftBit ^ tapBit;
-               for(int j = 0; j <n-1 ; j++)
+
+                for (int j = 0; j < n - 1; j++)
                 {
-                    Initial_seed[j] = Initial_seed[j+1];
+                    Initial_seed[j] = Initial_seed[j + 1];
                 }
-                
+
                 if (key)
                 {
-                    Initial_seed[n - 1] = '1' ;
-
-                    compelet_key[i] =  '1' ;
+                    Initial_seed[n - 1] = '1';
+                    compelet_key[i] = '1';
                 }
                 else
                 {
                     Initial_seed[n - 1] = '0';
-
                     compelet_key[i] = '0';
                 }
             }
-            string[] final = new string[2];
-            string compelet = new string(compelet_key);
-            string init = new string(Initial_seed);
-            final[0] = compelet;
-            final[1] = init;
-            return final;
+
+            return (new string(compelet_key), new string(Initial_seed));
 
         }
 
@@ -433,25 +428,21 @@ namespace ImageEncryptCompress
         {
             RGBPixel[,] Image = new RGBPixel[GetHeight(SourceImage), GetWidth(SourceImage)];
             Array.Copy(SourceImage, Image, SourceImage.Length);
-            string[] seed_key = new string[2];
-            string initSeed = init_seed;
-            int height = GetHeight(Image);
-            int width = GetWidth(Image);
-            for (int i = 0; i <height ; i++)
+            string complete_key;
+            int width = GetWidth(SourceImage);
+            int height = GetHeight(SourceImage);
+            for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToByte(seed_key[0], 2));
-                    initSeed = seed_key[1];
+                    (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
+                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(complete_key, 2));
 
-                    seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToByte(seed_key[0], 2));
-                    initSeed = seed_key[1];
+                    (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
+                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(complete_key, 2));
 
-                    seed_key = Generatekey(initSeed, tap_pos);
-                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToByte(seed_key[0], 2));
-                    initSeed = seed_key[1];
+                    (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
+                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(complete_key, 2));
                 }
             }
 
