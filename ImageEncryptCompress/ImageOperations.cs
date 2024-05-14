@@ -92,9 +92,9 @@ namespace ImageEncryptCompress
             int[] frequenciesBlue = new int[256];
             foreach (var pixel in image)
             {
-                    frequenciesRed[pixel.red]++;
-                    frequenciesGreen[pixel.green]++;
-                    frequenciesBlue[pixel.blue]++;
+                frequenciesRed[pixel.red]++;
+                frequenciesGreen[pixel.green]++;
+                frequenciesBlue[pixel.blue]++;
             }
 
             HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
@@ -115,7 +115,7 @@ namespace ImageEncryptCompress
             foreach (var pixel in image)
             {
                 string code = huffmanCodesRed[pixel.red];
-                
+
                 foreach (char bit in code)
                 {
                     if (bit == '1')
@@ -131,8 +131,8 @@ namespace ImageEncryptCompress
                     }
 
                 }
-              
-                
+
+
                 code = huffmanCodesGreen[pixel.green];
                 foreach (char bit in code)
                 {
@@ -175,7 +175,7 @@ namespace ImageEncryptCompress
                 encodedBytesGreen.Add(currentGreenByte);
             if (countBlue > 0)
                 encodedBytesBlue.Add(currentBlueByte);
-          
+
             return (rootRed, rootGreen, rootBlue, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
         }
 
@@ -184,7 +184,7 @@ namespace ImageEncryptCompress
             RGBPixel[,] image = new RGBPixel[height, width];
             int h = 0, w = 0;
             HuffmanNode current = rootRed;
-            
+
             foreach (byte b in encodedBytesRed)
             {
                 for (int i = 7; i >= 0; i--)
@@ -201,10 +201,10 @@ namespace ImageEncryptCompress
                             h++;
                             if (h == height)
                             {
-                               
+
                                 break;
                             }
-                            
+
                         }
                         current = rootRed;
                     }
@@ -213,10 +213,10 @@ namespace ImageEncryptCompress
                     else
                         current = current.Left;
                 }
-              
+
             }
 
-            byte bb = encodedBytesRed[encodedBytesRed.Length-1];
+            byte bb = encodedBytesRed[encodedBytesRed.Length - 1];
             for (int i = 7; i >= 0; i--)
             {
                 bool bit = ((bb >> i) & 1) == 1;
@@ -224,7 +224,7 @@ namespace ImageEncryptCompress
                 if (current.Left == null && current.Right == null)
                 {
                     image[height - 1, width - 1].red = current.Value;
-                
+
                     current = rootRed;
                     break;
                 }
@@ -233,9 +233,9 @@ namespace ImageEncryptCompress
                 else
                     current = current.Left;
             }
- 
-            
-       
+
+
+
             h = 0;
             w = 0;
             current = rootGreen;
@@ -282,9 +282,9 @@ namespace ImageEncryptCompress
                 else
                     current = current.Left;
             }
-    
 
-       
+
+
 
             h = 0;
             w = 0;
@@ -332,8 +332,8 @@ namespace ImageEncryptCompress
                 else
                     current = current.Left;
             }
-        
-         
+
+
 
             return image;
         }
@@ -355,7 +355,7 @@ namespace ImageEncryptCompress
 
             while (priorityQueue.Count > 1)
             {
-              
+
                 var firstPair = priorityQueue.First();
                 priorityQueue.Remove(firstPair.Key);
                 var secondPair = priorityQueue.First();
@@ -369,8 +369,8 @@ namespace ImageEncryptCompress
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
                 };
 
-                priorityQueue.Add((merged.Frequency,identifierCounter ), merged);
-                identifierCounter++; 
+                priorityQueue.Add((merged.Frequency, identifierCounter), merged);
+                identifierCounter++;
             }
 
             return priorityQueue.First().Value;
@@ -436,13 +436,13 @@ namespace ImageEncryptCompress
                 for (int j = 0; j < width; j++)
                 {
                     (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
-                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(complete_key, 2));
+                    Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToByte(complete_key, 2));
 
                     (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
-                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(complete_key, 2));
+                    Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToByte(complete_key, 2));
 
                     (complete_key, init_seed) = Generatekey(init_seed, tap_pos);
-                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(complete_key, 2));
+                    Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToByte(complete_key, 2));
                 }
             }
 
