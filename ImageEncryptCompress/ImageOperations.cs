@@ -103,9 +103,9 @@ namespace ImageEncryptCompress
             string[] huffmanCodesRed = new string[256];
             string[] huffmanCodesGreen = new string[256];
             string[] huffmanCodesBlue = new string[256];
-            BuildHuffmanCodes(rootRed, "", huffmanCodesRed);
-            BuildHuffmanCodes(rootGreen, "", huffmanCodesGreen);
-            BuildHuffmanCodes(rootBlue, "", huffmanCodesBlue);
+            GenerateCodes(rootRed, "", huffmanCodesRed);
+            GenerateCodes(rootGreen, "", huffmanCodesGreen);
+            GenerateCodes(rootBlue, "", huffmanCodesBlue);
             List<byte> encodedBytesRed = new List<byte>();
             List<byte> encodedBytesGreen = new List<byte>();
             List<byte> encodedBytesBlue = new List<byte>();
@@ -376,7 +376,7 @@ namespace ImageEncryptCompress
             return priorityQueue.First().Value;
         }
 
-        private static void BuildHuffmanCodes(HuffmanNode node, string code, string[] codes)
+        private static void GenerateCodes(HuffmanNode node, string code, string[] codes)
         {
             if (node == null)
                 return;
@@ -387,8 +387,8 @@ namespace ImageEncryptCompress
                 return;
             }
 
-            BuildHuffmanCodes(node.Left, code + "0", codes);
-            BuildHuffmanCodes(node.Right, code + "1", codes);
+            GenerateCodes(node.Left, code + "0", codes);
+            GenerateCodes(node.Right, code + "1", codes);
         }
 
         public static (string CompleteKey, string InitSeed) Generatekey(string init_sead, int tap_position)
