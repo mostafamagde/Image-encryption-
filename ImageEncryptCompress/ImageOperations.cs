@@ -43,8 +43,6 @@ namespace ImageEncryptCompress
 
             writer.Write(true);
             writer.Write(node.Value);
-            writer.Write(node.Frequency);
-
             WriteTree(writer, node.Left);
             WriteTree(writer, node.Right);
         }
@@ -58,8 +56,8 @@ namespace ImageEncryptCompress
             }
 
             byte value = reader.ReadByte();
-            int frequency = reader.ReadInt32();
-            HuffmanNode node = new HuffmanNode { Value = value, Frequency = frequency };
+    
+            HuffmanNode node = new HuffmanNode { Value = value };
 
             node.Left = ReadTree(reader);
             node.Right = ReadTree(reader);
@@ -371,21 +369,39 @@ namespace ImageEncryptCompress
 
         public static string[] Generatekey(string init_sead, int tap_position)
         {
-            string Initial_seed = string.Copy(init_sead);
-            string compelet_key = null;
-
+            char[] Initial_seed = string.Copy(init_sead).ToArray();
+            char[] compelet_key = new char[8];
+            int n = Initial_seed.Length;
             for (int i = 0; i < 8; i++)
             {
-                char leftBit = Initial_seed[0];
-                char tapBit = Initial_seed[Initial_seed.Length - tap_position - 1];
-                string key = Convert.ToString(leftBit ^ tapBit);
+                bool leftBit = Initial_seed[0]-'0'==1;
+                bool tapBit = Initial_seed[Initial_seed.Length - tap_position - 1]-'0'==1;
 
-                Initial_seed = Initial_seed.Substring(1) + key;
-                compelet_key = compelet_key + key;
+                bool key = leftBit ^ tapBit;
+               for(int j = 0; j <n-1 ; j++)
+                {
+                    Initial_seed[j] = Initial_seed[j+1];
+                }
+                
+                if (key)
+                {
+                    Initial_seed[n - 1] = '1' ;
+
+                    compelet_key[i] =  '1' ;
+                }
+                else
+                {
+                    Initial_seed[n - 1] = '0';
+
+                    compelet_key[i] = '0';
+                }
             }
             string[] final = new string[2];
-            final[0] = compelet_key;
-            final[1] = Initial_seed;
+            string compelet = new string(compelet_key);
+            string init = new string(Initial_seed);
+            final[0] = compelet;
+
+            final[1] = init;
             return final;
 
         }
