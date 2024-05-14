@@ -6,7 +6,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace ImageEncryptCompress
@@ -48,6 +52,7 @@ namespace ImageEncryptCompress
                     txtWidth.Text = ImageOperations.GetWidth(OriginalImageMatrix).ToString();
                     txtHeight.Text = ImageOperations.GetHeight(OriginalImageMatrix).ToString();
                 }
+                MessageBox.Show("File opened successfully.");
             }
         }
 
@@ -59,7 +64,7 @@ namespace ImageEncryptCompress
         //    ImageOperations.DisplayImage(ImageMatrix, pictureBox3);
         //}
 
-        private void SaveImageButton_Click(object sender, EventArgs e)
+        private void SaveFileButton_Click(object sender, EventArgs e)
         {
             if (ImageMatrixAfterOperation == null)
             {
@@ -142,8 +147,16 @@ namespace ImageEncryptCompress
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
             ImageMatrixAfterOperation = ImageOperations.Encrypt(OriginalImageMatrix, Seed_Box.Text, (int)K_value.Value);
-            ImageOperations.CompressImage(ImageMatrixAfterOperation, $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
+
+            var (RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB) = ImageOperations.CompressImage(ImageMatrixAfterOperation);
+
+            WriteBinaryFile(filePath, RedR, GreenR, BlueR, RedEB, GreeeenEB, BlueEB);
+
+            MessageBox.Show("Image compression completed and .bin file is saved.");
+
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
             EncryptionCompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
@@ -152,31 +165,27 @@ namespace ImageEncryptCompress
 
         private void DecryptDecompressButton_Click(object sender, EventArgs e)
         {
-            if (!validateInputs(validateImage: false))
-                return;
-
             if (fileExtension != ".bin")
             {
                 MessageBox.Show("Enter .bin file!");
                 return;
             }
 
+            MessageBox.Show("Entered biniary initial seed and tap position will be ignored!", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ImageMatrixAfterOperation = ImageOperations.Decompress($"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin");
-            ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, Seed_Box.Text, (int)K_value.Value);
+
+            string filePath = $"{pathWithoutFileName}\\{fileNameWithoutExtension}.bin";
+
+            var (RedR, GreenR, BlueR, height, width, TapP, InitS, RedEB, GreenEB, BlueEB) = ReadBinaryFile(filePath);
+
+            ImageMatrixAfterOperation = ImageOperations.Decompress(RedR, GreenR, BlueR, height, width, RedEB, GreenEB, BlueEB);
+            ImageMatrixAfterOperation = ImageOperations.Encrypt(ImageMatrixAfterOperation, InitS, TapP);
             sw.Stop();
             TimeSpan timeSpan = TimeSpan.FromSeconds(sw.Elapsed.TotalSeconds);
             DecryptionDecompressionTime.Text = timeSpan.ToString(@"hh\:mm\:ss\.ff");
             ImageOperations.DisplayImage(ImageMatrixAfterOperation, pictureBox2);
-        }
-
-        private void Seed_Box_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (!(e.KeyChar == '1') && !(e.KeyChar == '0') && !char.IsControl(e.KeyChar))
-            {
-                e.Handled = true;
-            }
         }
 
         private bool validateInputs(bool validateImage = true)
@@ -199,6 +208,17 @@ namespace ImageEncryptCompress
                 MessageBox.Show("Enter Tap Position.");
                 return false;
             }
+
+            Seed_Box.Text = Seed_Box.Text.Trim();
+            foreach (char item in Seed_Box.Text.Distinct().ToArray())
+            {
+                if (item != '0' && item != '1')
+                {
+                    MessageBox.Show("Enter Valid Initial Seed.");
+                    return false;
+                }
+            }
+
             if (Seed_Box.Text.Length <= K_value.Value)
             {
                 MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
@@ -207,15 +227,106 @@ namespace ImageEncryptCompress
             return true;
         }
 
+        private void Seed_Box_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (!(e.KeyChar == '1') && !(e.KeyChar == '0') && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
         private void K_value_ValueChanged(object sender, EventArgs e)
         {
             if (Seed_Box.Text.Length <= K_value.Value)
             {
-                MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.");
-                K_value.Value = Seed_Box.Text.Length - 1;
+                MessageBox.Show("Tap Position Must Be Less Than The Length Of The Initial Seed.", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                try
+                {
+                    K_value.Value = Seed_Box.Text.Length - 1;
+                }
+                catch { K_value.Value = 0; }
             }
         }
 
+        private void WriteBinaryFile(string filePath, HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, List<byte> encodedBytesRed, List<byte> encodedBytesGreen, List<byte> encodedBytesBlue)
+        {
+            using (FileStream file = File.Open(filePath, FileMode.Create))
+            {
+                using (BinaryWriter writer = new BinaryWriter(file))
+                {
+                    //IFormatter formatter = new BinaryFormatter();
+                    //formatter.Serialize(writer.BaseStream, rootRed);
+                    //formatter.Serialize(writer.BaseStream, rootGreen);
+                    //formatter.Serialize(writer.BaseStream, rootBlue);
+                    HuffmanNode.WriteTree(writer, rootRed);
+                    HuffmanNode.WriteTree(writer, rootGreen);
+                    HuffmanNode.WriteTree(writer, rootBlue);
+
+                    writer.Write(ImageOperations.GetHeight(OriginalImageMatrix));
+                    writer.Write(ImageOperations.GetWidth(OriginalImageMatrix));
+
+                    writer.Write(Convert.ToInt32(K_value.Value));
+                    writer.Write(Seed_Box.Text);
+
+                    writer.Write(encodedBytesRed.Count);
+                    writer.Write(encodedBytesRed.ToArray());
+
+                    writer.Write(encodedBytesGreen.Count);
+                    writer.Write(encodedBytesGreen.ToArray());
+
+                    writer.Write(encodedBytesBlue.Count);
+                    writer.Write(encodedBytesBlue.ToArray());
+
+                    writer.Dispose();
+                    file.Dispose();
+                }
+            }
+        }
+
+
+
+        private (HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, int tab_position, string init_seed, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue) ReadBinaryFile(string filePath)
+        {
+
+            HuffmanNode rootRed, rootGreen, rootBlue;
+            int height, width, tab_position;
+            string init_seed;
+            byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
+
+            using (FileStream file = File.Open(filePath, FileMode.Open))
+            {
+                using (BinaryReader reader = new BinaryReader(file))
+                {
+                    //IFormatter formatter = new BinaryFormatter();
+                    //rootRed = (HuffmanNode)formatter.Deserialize(file);
+                    //rootGreen = (HuffmanNode)formatter.Deserialize(file);
+                    //rootBlue = (HuffmanNode)formatter.Deserialize(file);
+
+                    rootRed = HuffmanNode.ReadTree(reader);
+                    rootGreen = HuffmanNode.ReadTree(reader);
+                    rootBlue = HuffmanNode.ReadTree(reader);
+
+                    height = reader.ReadInt32();
+                    width = reader.ReadInt32();
+
+                    tab_position = reader.ReadInt32();
+                    init_seed = reader.ReadString();
+
+                    int encodedBytesRedLength = reader.ReadInt32();
+                    encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
+
+                    int encodedBytesGreenLength = reader.ReadInt32();
+                    encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
+
+                    int encodedBytesBlueLength = reader.ReadInt32();
+                    encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
+
+                    reader.Dispose();
+                    file.Dispose();
+                }
+            }
+            return (rootRed, rootGreen, rootBlue, height, width, tab_position, init_seed, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
+        }
 
     }
 }

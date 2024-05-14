@@ -61,7 +61,7 @@ namespace ImageEncryptCompress
             this.EncryptionCompressionTime = new System.Windows.Forms.TextBox();
             this.DecryptionDecompressionTime = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.SaveImageButton = new System.Windows.Forms.Button();
+            this.SaveFileButton = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.EncryptDecryptTime = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -99,7 +99,7 @@ namespace ImageEncryptCompress
             this.btnOpen.Name = "btnOpen";
             this.btnOpen.Size = new System.Drawing.Size(146, 89);
             this.btnOpen.TabIndex = 2;
-            this.btnOpen.Text = "Open Image";
+            this.btnOpen.Text = "Open File";
             this.btnOpen.UseVisualStyleBackColor = true;
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
@@ -312,16 +312,16 @@ namespace ImageEncryptCompress
             this.label3.TabIndex = 28;
             this.label3.Text = "Decryption Decompression Time";
             // 
-            // SaveImageButton
+            // SaveFileButton
             // 
-            this.SaveImageButton.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold);
-            this.SaveImageButton.Location = new System.Drawing.Point(917, 636);
-            this.SaveImageButton.Name = "SaveImageButton";
-            this.SaveImageButton.Size = new System.Drawing.Size(146, 87);
-            this.SaveImageButton.TabIndex = 29;
-            this.SaveImageButton.Text = "Save Image";
-            this.SaveImageButton.UseVisualStyleBackColor = true;
-            this.SaveImageButton.Click += new System.EventHandler(this.SaveImageButton_Click);
+            this.SaveFileButton.Font = new System.Drawing.Font("Tahoma", 12F, System.Drawing.FontStyle.Bold);
+            this.SaveFileButton.Location = new System.Drawing.Point(917, 636);
+            this.SaveFileButton.Name = "SaveFileButton";
+            this.SaveFileButton.Size = new System.Drawing.Size(146, 87);
+            this.SaveFileButton.TabIndex = 29;
+            this.SaveFileButton.Text = "Save File";
+            this.SaveFileButton.UseVisualStyleBackColor = true;
+            this.SaveFileButton.Click += new System.EventHandler(this.SaveFileButton_Click);
             // 
             // label4
             // 
@@ -349,7 +349,7 @@ namespace ImageEncryptCompress
             this.ClientSize = new System.Drawing.Size(1181, 735);
             this.Controls.Add(this.EncryptDecryptTime);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.SaveImageButton);
+            this.Controls.Add(this.SaveFileButton);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.DecryptionDecompressionTime);
@@ -409,7 +409,7 @@ namespace ImageEncryptCompress
         private System.Windows.Forms.TextBox EncryptionCompressionTime;
         private System.Windows.Forms.TextBox DecryptionDecompressionTime;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button SaveImageButton;
+        private System.Windows.Forms.Button SaveFileButton;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox EncryptDecryptTime;
     }

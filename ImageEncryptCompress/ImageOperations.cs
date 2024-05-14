@@ -1,20 +1,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.IO.Pipes;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
-using System.IO.Compression;
+using System.Text;
+using System.Windows.Forms;
 ///Algorithms Project
 ///Intelligent Scissors
 ///
@@ -29,6 +24,7 @@ namespace ImageEncryptCompress
     {
         public byte red, green, blue;
     }
+
     [Serializable]
     public class HuffmanNode
     {
@@ -36,8 +32,45 @@ namespace ImageEncryptCompress
         public int Frequency;
         public HuffmanNode Left;
         public HuffmanNode Right;
-        public string Identifier;
+        public short Identifier;
+
+        public static void WriteTree(BinaryWriter writer, HuffmanNode node)
+        {
+            if (node == null)
+            {
+                writer.Write(false);
+                return;
+            }
+
+            writer.Write(true);
+            writer.Write(node.Value);
+            writer.Write(node.Frequency);
+
+            WriteTree(writer, node.Left);
+            WriteTree(writer, node.Right);
+        }
+
+        public static HuffmanNode ReadTree(BinaryReader reader)
+        {
+            bool isNotNull = reader.ReadBoolean();
+            if (!isNotNull)
+            {
+                return null;
+            }
+
+            byte value = reader.ReadByte();
+            int frequency = reader.ReadInt32();
+            HuffmanNode node = new HuffmanNode { Value = value, Frequency = frequency };
+
+            node.Left = ReadTree(reader);
+            node.Right = ReadTree(reader);
+
+            return node;
+        }
+
     }
+
+
 
     public struct RGBPixelD
     {
@@ -57,7 +90,7 @@ namespace ImageEncryptCompress
         /// <returns>2D array of colors</returns>
         /// 
 
-        public static void CompressImage(RGBPixel[,] image, string outputFilePath)
+        public static (HuffmanNode RootRed, HuffmanNode RootGreen, HuffmanNode RootBlue, List<byte> EncodedBytesRed, List<byte> EncodedBytesGreen, List<byte> EncodedBytesBlue) CompressImage(RGBPixel[,] image)
         {
             Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
             Dictionary<byte, int> frequenciesGreen = new Dictionary<byte, int>();
@@ -93,8 +126,6 @@ namespace ImageEncryptCompress
             List<byte> encodedBytesBlue = new List<byte>();
             int countRed = 0, countGreen = 0, countBlue = 0;
             byte currentRedByte = 0, currentGreenByte = 0, currentBlueByte = 0;
-            int width = GetWidth(image);
-            int height = GetHeight(image);
             int w = 0;
 
             foreach (var pixel in image)
@@ -152,86 +183,19 @@ namespace ImageEncryptCompress
             }
 
             if (currentRedByte != 0)
-            {
                 encodedBytesRed.Add(currentRedByte);
-                currentRedByte = 0;
-                countRed = 0;
-            }
 
             if (currentBlueByte != 0)
-            {
                 encodedBytesBlue.Add(currentBlueByte);
-                currentBlueByte = 0;
-                countBlue = 0;
-            }
 
             if (currentGreenByte != 0)
-            {
                 encodedBytesGreen.Add(currentGreenByte);
-                currentGreenByte = 0;
-                countGreen = 0;
-            }
 
-            using (FileStream file = File.Open(outputFilePath, FileMode.Create))
-            {
-                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Compress))
-                {
-                    using (BinaryWriter writer = new BinaryWriter(zipStream))
-                    {
-                        IFormatter formatter = new BinaryFormatter();
-                        formatter.Serialize(writer.BaseStream, rootRed);
-                        formatter.Serialize(writer.BaseStream, rootGreen);
-                        formatter.Serialize(writer.BaseStream, rootBlue);
-                        writer.Write(GetHeight(image));
-                        writer.Write(GetWidth(image));
-                        writer.Write(encodedBytesRed.Count);
-                        writer.Write(encodedBytesRed.ToArray());
-
-                        writer.Write(encodedBytesGreen.Count);
-                        writer.Write(encodedBytesGreen.ToArray());
-
-                        writer.Write(encodedBytesBlue.Count);
-                        writer.Write(encodedBytesBlue.ToArray());
-                    }
-                }
-            }
-
-            MessageBox.Show("Image compression completed and .bin file is saved.");
+            return (rootRed, rootGreen, rootBlue, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
         }
 
-        public static RGBPixel[,] Decompress(string path)
+        public static RGBPixel[,] Decompress(HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue)
         {
-            HuffmanNode rootRed, rootGreen, rootBlue;
-            int width, height;
-            byte[] encodedBytesRed, encodedBytesGreen, encodedBytesBlue;
-
-            using (FileStream file = File.Open(path, FileMode.Open))
-            {
-                using (GZipStream zipStream = new GZipStream(file, CompressionMode.Decompress))
-                {
-                    using (BinaryReader reader = new BinaryReader(zipStream))
-                    {
-                        // Deserialize Huffman tree
-                        IFormatter formatter = new BinaryFormatter();
-                        rootRed = (HuffmanNode)formatter.Deserialize(zipStream);
-                        rootGreen = (HuffmanNode)formatter.Deserialize(zipStream);
-                        rootBlue = (HuffmanNode)formatter.Deserialize(zipStream);
-
-                        // Read height and width
-                        height = reader.ReadInt32();
-                        width = reader.ReadInt32();
-                        int encodedBytesRedLength = reader.ReadInt32();
-                        encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
-
-                        int encodedBytesGreenLength = reader.ReadInt32();
-                        encodedBytesGreen = reader.ReadBytes(encodedBytesGreenLength);
-
-                        int encodedBytesBlueLength = reader.ReadInt32();
-                        encodedBytesBlue = reader.ReadBytes(encodedBytesBlueLength);
-                    }
-                }
-            }
-
             RGBPixel[,] image = new RGBPixel[height, width];
             //Dictionary<string, byte> huffmanCodes = ReBuildHuffmanCodes(root);
             // Decode Huffman-encoded bits and reconstruct image pixels
@@ -268,7 +232,6 @@ namespace ImageEncryptCompress
             h = 0;
             w = 0;
             current = rootGreen;
-
             foreach (byte b in encodedBytesGreen)
             {
                 for (int i = 7; i >= 0; i--)
@@ -300,7 +263,6 @@ namespace ImageEncryptCompress
             h = 0;
             w = 0;
             current = rootBlue;
-
             foreach (byte b in encodedBytesBlue)
             {
                 for (int i = 7; i >= 0; i--)
@@ -356,12 +318,12 @@ namespace ImageEncryptCompress
 
         public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
         {
-            int identifierCounter = 0;
-            var priorityQueue = new SortedDictionary<(int Frequency, string Identifier), HuffmanNode>();
+            short identifierCounter = 0;
+            var priorityQueue = new SortedDictionary<(int Frequency, int Identifier), HuffmanNode>();
 
             foreach (var kvp in frequencies)
             {
-                priorityQueue.Add((kvp.Value, identifierCounter.ToString()), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter.ToString() });
+                priorityQueue.Add((kvp.Value, identifierCounter), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter });
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
@@ -377,7 +339,7 @@ namespace ImageEncryptCompress
                     Right = firstPair.Value,
                     Left = secondPair.Value,
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
-                    Identifier = identifierCounter.ToString()
+                    Identifier = identifierCounter
                 };
 
                 priorityQueue.Add((merged.Frequency, merged.Identifier), merged);
@@ -411,22 +373,17 @@ namespace ImageEncryptCompress
 
         public static string[] Generatekey(string init_sead, int tap_position)
         {
-
             string Initial_seed = string.Copy(init_sead);
-
             string compelet_key = null;
 
             for (int i = 0; i < 8; i++)
             {
-
-
                 char leftBit = Initial_seed[0];
                 char tapBit = Initial_seed[Initial_seed.Length - tap_position - 1];
                 string key = Convert.ToString(leftBit ^ tapBit);
 
                 Initial_seed = Initial_seed.Substring(1) + key;
                 compelet_key = compelet_key + key;
-
             }
             string[] final = new string[2];
             final[0] = compelet_key;
@@ -447,30 +404,17 @@ namespace ImageEncryptCompress
                 for (int j = 0; j < GetWidth(Image); j++)
                 {
                     seed_key = Generatekey(initSeed, tap_pos);
-
                     Image[i, j].red = Convert.ToByte(Image[i, j].red ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
-                    seed_key = Generatekey(initSeed, tap_pos);
 
+                    seed_key = Generatekey(initSeed, tap_pos);
                     Image[i, j].green = Convert.ToByte(Image[i, j].green ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
+
                     seed_key = Generatekey(initSeed, tap_pos);
-
                     Image[i, j].blue = Convert.ToByte(Image[i, j].blue ^ Convert.ToInt32(seed_key[0], 2));
-
                     initSeed = seed_key[1];
-
-                    //int blue_key = Generatekey(copy, tap_pos) ^ Image[i, j].blue;
-                    //Image[i, j].blue = Convert.ToByte(blue_key);
-
-                    //int green_key = Generatekey(copy, tap_pos) ^ Image[i, j].green;
-                    //Image[i, j].green = Convert.ToByte(green_key);
-
                 }
-
-
             }
 
             //CompressImage(Image, "C:/Users/Gabesky/Downloads/OUTPUT/OUTPUT/.bin");
