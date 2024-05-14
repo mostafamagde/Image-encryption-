@@ -24,6 +24,7 @@ namespace ImageEncryptCompress
     {
         public byte red, green, blue;
     }
+
     [Serializable]
     public class HuffmanNode
     {
@@ -31,8 +32,45 @@ namespace ImageEncryptCompress
         public int Frequency;
         public HuffmanNode Left;
         public HuffmanNode Right;
-        public string Identifier;
+        public short Identifier;
+
+        public static void WriteTree(BinaryWriter writer, HuffmanNode node)
+        {
+            if (node == null)
+            {
+                writer.Write(false);
+                return;
+            }
+
+            writer.Write(true);
+            writer.Write(node.Value);
+            writer.Write(node.Frequency);
+
+            WriteTree(writer, node.Left);
+            WriteTree(writer, node.Right);
+        }
+
+        public static HuffmanNode ReadTree(BinaryReader reader)
+        {
+            bool isNotNull = reader.ReadBoolean();
+            if (!isNotNull)
+            {
+                return null;
+            }
+
+            byte value = reader.ReadByte();
+            int frequency = reader.ReadInt32();
+            HuffmanNode node = new HuffmanNode { Value = value, Frequency = frequency };
+
+            node.Left = ReadTree(reader);
+            node.Right = ReadTree(reader);
+
+            return node;
+        }
+
     }
+
+
 
     public struct RGBPixelD
     {
@@ -88,8 +126,6 @@ namespace ImageEncryptCompress
             List<byte> encodedBytesBlue = new List<byte>();
             int countRed = 0, countGreen = 0, countBlue = 0;
             byte currentRedByte = 0, currentGreenByte = 0, currentBlueByte = 0;
-            int width = GetWidth(image);
-            int height = GetHeight(image);
             int w = 0;
 
             foreach (var pixel in image)
@@ -147,25 +183,13 @@ namespace ImageEncryptCompress
             }
 
             if (currentRedByte != 0)
-            {
                 encodedBytesRed.Add(currentRedByte);
-                currentRedByte = 0;
-                countRed = 0;
-            }
 
             if (currentBlueByte != 0)
-            {
                 encodedBytesBlue.Add(currentBlueByte);
-                currentBlueByte = 0;
-                countBlue = 0;
-            }
 
             if (currentGreenByte != 0)
-            {
                 encodedBytesGreen.Add(currentGreenByte);
-                currentGreenByte = 0;
-                countGreen = 0;
-            }
 
             return (rootRed, rootGreen, rootBlue, encodedBytesRed, encodedBytesGreen, encodedBytesBlue);
         }
@@ -294,12 +318,12 @@ namespace ImageEncryptCompress
 
         public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
         {
-            int identifierCounter = 0;
-            var priorityQueue = new SortedDictionary<(int Frequency, string Identifier), HuffmanNode>();
+            short identifierCounter = 0;
+            var priorityQueue = new SortedDictionary<(int Frequency, int Identifier), HuffmanNode>();
 
             foreach (var kvp in frequencies)
             {
-                priorityQueue.Add((kvp.Value, identifierCounter.ToString()), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter.ToString() });
+                priorityQueue.Add((kvp.Value, identifierCounter), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value, Identifier = identifierCounter });
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
@@ -315,7 +339,7 @@ namespace ImageEncryptCompress
                     Right = firstPair.Value,
                     Left = secondPair.Value,
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
-                    Identifier = identifierCounter.ToString()
+                    Identifier = identifierCounter
                 };
 
                 priorityQueue.Add((merged.Frequency, merged.Identifier), merged);

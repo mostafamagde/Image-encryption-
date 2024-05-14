@@ -254,10 +254,13 @@ namespace ImageEncryptCompress
             {
                 using (BinaryWriter writer = new BinaryWriter(file))
                 {
-                    IFormatter formatter = new BinaryFormatter();
-                    formatter.Serialize(writer.BaseStream, rootRed);
-                    formatter.Serialize(writer.BaseStream, rootGreen);
-                    formatter.Serialize(writer.BaseStream, rootBlue);
+                    //IFormatter formatter = new BinaryFormatter();
+                    //formatter.Serialize(writer.BaseStream, rootRed);
+                    //formatter.Serialize(writer.BaseStream, rootGreen);
+                    //formatter.Serialize(writer.BaseStream, rootBlue);
+                    HuffmanNode.WriteTree(writer, rootRed);
+                    HuffmanNode.WriteTree(writer, rootGreen);
+                    HuffmanNode.WriteTree(writer, rootBlue);
 
                     writer.Write(ImageOperations.GetHeight(OriginalImageMatrix));
                     writer.Write(ImageOperations.GetWidth(OriginalImageMatrix));
@@ -280,6 +283,8 @@ namespace ImageEncryptCompress
             }
         }
 
+
+
         private (HuffmanNode rootRed, HuffmanNode rootGreen, HuffmanNode rootBlue, int height, int width, int tab_position, string init_seed, byte[] encodedBytesRed, byte[] encodedBytesGreen, byte[] encodedBytesBlue) ReadBinaryFile(string filePath)
         {
 
@@ -292,10 +297,14 @@ namespace ImageEncryptCompress
             {
                 using (BinaryReader reader = new BinaryReader(file))
                 {
-                    IFormatter formatter = new BinaryFormatter();
-                    rootRed = (HuffmanNode)formatter.Deserialize(file);
-                    rootGreen = (HuffmanNode)formatter.Deserialize(file);
-                    rootBlue = (HuffmanNode)formatter.Deserialize(file);
+                    //IFormatter formatter = new BinaryFormatter();
+                    //rootRed = (HuffmanNode)formatter.Deserialize(file);
+                    //rootGreen = (HuffmanNode)formatter.Deserialize(file);
+                    //rootBlue = (HuffmanNode)formatter.Deserialize(file);
+
+                    rootRed = HuffmanNode.ReadTree(reader);
+                    rootGreen = HuffmanNode.ReadTree(reader);
+                    rootBlue = HuffmanNode.ReadTree(reader);
 
                     height = reader.ReadInt32();
                     width = reader.ReadInt32();
