@@ -67,7 +67,6 @@ namespace ImageEncryptCompress
     }
 
 
-
     public struct RGBPixelD
     {
         public double red, green, blue;
@@ -93,11 +92,9 @@ namespace ImageEncryptCompress
             int[] frequenciesBlue = new int[256];
             foreach (var pixel in image)
             {
-
-                frequenciesRed[pixel.red]++;
-                frequenciesGreen[pixel.green]++;
-                frequenciesBlue[pixel.blue]++;
-
+                    frequenciesRed[pixel.red]++;
+                    frequenciesGreen[pixel.green]++;
+                    frequenciesBlue[pixel.blue]++;
             }
 
             HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
@@ -282,28 +279,6 @@ namespace ImageEncryptCompress
             return image;
         }
 
-        public static Dictionary<string, byte> ReBuildHuffmanCodes(HuffmanNode root)
-        {
-            Dictionary<string, byte> codes = new Dictionary<string, byte>();
-            ReBuildHuffmanCodesRecursive(root, "", codes);
-            return codes;
-        }
-
-        private static void ReBuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<string, byte> codes)
-        {
-            if (node == null)
-                return;
-
-            if (node.Left == null && node.Right == null)
-            {
-                codes.Add(code, node.Value);
-                return;
-            }
-
-            ReBuildHuffmanCodesRecursive(node.Left, code + "0", codes);
-            ReBuildHuffmanCodesRecursive(node.Right, code + "1", codes);
-        }
-
         public static HuffmanNode BuildHuffmanTree(int[] frequencies)
         {
 
@@ -312,8 +287,11 @@ namespace ImageEncryptCompress
 
             for (int i = 0; i < 256; i++)
             {
-                priorityQueue.Add((frequencies[i], identifierCounter), new HuffmanNode { Value = (byte)i, Frequency = frequencies[i] });
-                identifierCounter++; // Increment the counter for the next identifier
+                if (frequencies[i] != 0)
+                {
+                    priorityQueue.Add((frequencies[i], identifierCounter), new HuffmanNode { Value = (byte)i, Frequency = frequencies[i] });
+                    identifierCounter++;
+                }
             }
 
             while (priorityQueue.Count > 1)
@@ -330,8 +308,8 @@ namespace ImageEncryptCompress
                     Frequency = firstPair.Value.Frequency + secondPair.Value.Frequency,
                 };
 
-                priorityQueue.Add((merged.Frequency, identifierCounter), merged);
-                identifierCounter++; // Increment the counter for the next identifier
+                priorityQueue.Add((merged.Frequency,identifierCounter ), merged);
+                identifierCounter++; 
             }
 
             return priorityQueue.First().Value;
