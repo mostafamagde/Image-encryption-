@@ -88,35 +88,27 @@ namespace ImageEncryptCompress
 
         public static (HuffmanNode RootRed, HuffmanNode RootGreen, HuffmanNode RootBlue, List<byte> EncodedBytesRed, List<byte> EncodedBytesGreen, List<byte> EncodedBytesBlue) CompressImage(RGBPixel[,] image)
         {
-            Dictionary<byte, int> frequenciesRed = new Dictionary<byte, int>();
-            Dictionary<byte, int> frequenciesGreen = new Dictionary<byte, int>();
-            Dictionary<byte, int> frequenciesBlue = new Dictionary<byte, int>();
+            int[] frequenciesRed = new int[256];
+            int[] frequenciesGreen = new int[256];
+            int[] frequenciesBlue = new int[256];
             foreach (var pixel in image)
             {
-                int value;
-
-                if (frequenciesRed.TryGetValue(pixel.red, out value))
-                    frequenciesRed[pixel.red] = value + 1;
-                else
-                    frequenciesRed[pixel.red] = 1;
-
-                if (frequenciesGreen.TryGetValue(pixel.green, out value))
-                    frequenciesGreen[pixel.green] = value + 1;
-                else
-                    frequenciesGreen[pixel.green] = 1;
-
-                if (frequenciesBlue.TryGetValue(pixel.blue, out value))
-                    frequenciesBlue[pixel.blue] = value + 1;
-                else
-                    frequenciesBlue[pixel.blue] = 1;
+                
+                    frequenciesRed[pixel.red]++;
+                    frequenciesGreen[pixel.green]++;
+                    frequenciesBlue[pixel.blue]++;
+                
             }
 
             HuffmanNode rootRed = BuildHuffmanTree(frequenciesRed);
             HuffmanNode rootGreen = BuildHuffmanTree(frequenciesGreen);
             HuffmanNode rootBlue = BuildHuffmanTree(frequenciesBlue);
-            Dictionary<byte, string> huffmanCodesRed = BuildHuffmanCodes(rootRed);
-            Dictionary<byte, string> huffmanCodesGreen = BuildHuffmanCodes(rootGreen);
-            Dictionary<byte, string> huffmanCodesBlue = BuildHuffmanCodes(rootBlue);
+            string[] huffmanCodesRed=new string[256];
+            string[] huffmanCodesGreen = new string[256];
+            string[] huffmanCodesBlue = new string[256];
+            BuildHuffmanCodes(rootRed,"",huffmanCodesRed);
+            BuildHuffmanCodes(rootGreen,"",huffmanCodesGreen);
+            BuildHuffmanCodes(rootBlue,"",huffmanCodesBlue);
             List<byte> encodedBytesRed = new List<byte>();
             List<byte> encodedBytesGreen = new List<byte>();
             List<byte> encodedBytesBlue = new List<byte>();
@@ -312,15 +304,15 @@ namespace ImageEncryptCompress
             ReBuildHuffmanCodesRecursive(node.Right, code + "1", codes);
         }
 
-        public static HuffmanNode BuildHuffmanTree(Dictionary<byte, int> frequencies)
+        public static HuffmanNode BuildHuffmanTree(int[] frequencies)
         {
 
             int identifierCounter = 0;
             var priorityQueue = new SortedDictionary<(int Frequency, int Identifier), HuffmanNode>();
 
-            foreach (var kvp in frequencies)
+           for (int i = 0;i<256;i++)
             {
-                priorityQueue.Add((kvp.Value, identifierCounter), new HuffmanNode { Value = kvp.Key, Frequency = kvp.Value });
+                priorityQueue.Add((frequencies[i], identifierCounter), new HuffmanNode { Value =(byte)i, Frequency = frequencies[i] });
                 identifierCounter++; // Increment the counter for the next identifier
             }
 
@@ -345,26 +337,19 @@ namespace ImageEncryptCompress
             return priorityQueue.First().Value;
         }
 
-        public static Dictionary<byte, string> BuildHuffmanCodes(HuffmanNode root)
-        {
-            var codes = new Dictionary<byte, string>();
-            BuildHuffmanCodesRecursive(root, "", codes);
-            return codes;
-        }
-
-        private static void BuildHuffmanCodesRecursive(HuffmanNode node, string code, Dictionary<byte, string> codes)
+        private static void BuildHuffmanCodes(HuffmanNode node, string code, string[] codes)
         {
             if (node == null)
                 return;
 
             if (node.Left == null && node.Right == null)
             {
-                codes.Add(node.Value, code);
+                codes[node.Value]=code;
                 return;
             }
 
-            BuildHuffmanCodesRecursive(node.Left, code + "0", codes);
-            BuildHuffmanCodesRecursive(node.Right, code + "1", codes);
+            BuildHuffmanCodes(node.Left, code + "0", codes);
+            BuildHuffmanCodes(node.Right, code + "1", codes);
         }
 
         public static string[] Generatekey(string init_sead, int tap_position)
