@@ -29,6 +29,8 @@ namespace ImageEncryptCompress
             EncryptionCompressionTime.Text = null;
             DecryptionDecompressionTime.Text = null;
             EncryptDecryptTime.Text = null;
+            CompressTime.Text = null;
+            DecompressTime.Text = null;
         }
 
         #region Windows Form Designer generated code

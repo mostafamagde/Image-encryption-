@@ -299,15 +299,15 @@ namespace ImageEncryptCompress
             {
                 using (BinaryWriter writer = new BinaryWriter(file))
                 {
-                    HuffmanNode.WriteTree(writer, rootRed);
-                    HuffmanNode.WriteTree(writer, rootGreen);
-                    HuffmanNode.WriteTree(writer, rootBlue);
+                    writer.Write(Seed_Box.Text);
+                    writer.Write(Convert.ToInt32(K_value.Value));
 
                     writer.Write(ImageOperations.GetHeight(OriginalImageMatrix));
                     writer.Write(ImageOperations.GetWidth(OriginalImageMatrix));
 
-                    writer.Write(Convert.ToInt32(K_value.Value));
-                    writer.Write(Seed_Box.Text);
+                    HuffmanNode.WriteTree(writer, rootRed);
+                    HuffmanNode.WriteTree(writer, rootGreen);
+                    HuffmanNode.WriteTree(writer, rootBlue);
 
                     writer.Write(encodedBytesRed.Count);
                     writer.Write(encodedBytesRed.ToArray());
@@ -336,15 +336,15 @@ namespace ImageEncryptCompress
             {
                 using (BinaryReader reader = new BinaryReader(file))
                 {
-                    rootRed = HuffmanNode.ReadTree(reader);
-                    rootGreen = HuffmanNode.ReadTree(reader);
-                    rootBlue = HuffmanNode.ReadTree(reader);
+                    init_seed = reader.ReadString();
+                    tab_position = reader.ReadInt32();
 
                     height = reader.ReadInt32();
                     width = reader.ReadInt32();
 
-                    tab_position = reader.ReadInt32();
-                    init_seed = reader.ReadString();
+                    rootRed = HuffmanNode.ReadTree(reader);
+                    rootGreen = HuffmanNode.ReadTree(reader);
+                    rootBlue = HuffmanNode.ReadTree(reader);
 
                     int encodedBytesRedLength = reader.ReadInt32();
                     encodedBytesRed = reader.ReadBytes(encodedBytesRedLength);
