@@ -26,7 +26,7 @@ namespace ImageEncryptCompress
 
         RGBPixel[,] OriginalImageMatrix;
         RGBPixel[,] ImageMatrixAfterOperation;
-        public static PixelFormat ImagePixelFormat;
+        public static PixelFormat ImagePixelFormat = PixelFormat.Format24bppRgb;
         string path;
         string pathWithoutFileName;
         string fileExtension;
